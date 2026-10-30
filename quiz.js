@@ -1,14 +1,31 @@
-for(const rank of ranks) {
- const option=document.createElement("option");
- option.value=rank;
- option.textContent=rank;
- $("rank").appendChild(option);
+function addFilterOptions(containerId,values,name) {
+ const container=$(containerId);
+ for(const [index,value] of values.entries()) {
+  const label=document.createElement("label");
+  label.className="multi-option";
+  const checkbox=document.createElement("input");
+  checkbox.type="checkbox";
+  checkbox.name=name;
+  checkbox.value=value;
+  checkbox.id=`${name}-${index}`;
+  checkbox.addEventListener("change",updateSetup);
+  const text=document.createElement("span");
+  text.textContent=value;
+  label.append(checkbox,text);
+  container.appendChild(label);
+ }
 }
-for(const topic of topics) {
- const option=document.createElement("option");
- option.value=topic;
- option.textContent=topic;
- $("topic").appendChild(option);
+
+addFilterOptions("rankOptions",ranks,"rank");
+addFilterOptions("topicOptions",topics,"topic");
+
+function selectedValues(name) {
+ return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(option=>option.value);
+}
+
+function updateFilterSummary(name,summaryId,allLabel,selectedLabel) {
+ const selected=selectedValues(name);
+ $(summaryId).textContent=selected.length?`${selected.length} ${selectedLabel} selected`:allLabel;
 }
 
 let quiz=[],answers=[],index=0;
@@ -37,19 +54,32 @@ function buildOptions(question) {
 }
 
 function filtered() {
- const rank=$("rank").value,topic=$("topic").value;
- return all.filter(question=>(!rank||question.rank===rank)&&(!topic||question.cat===topic));
+ const selectedRanks=selectedValues("rank"),selectedTopics=selectedValues("topic");
+ return all.filter(question=>
+  (!selectedRanks.length||selectedRanks.includes(question.rank))&&
+  (!selectedTopics.length||selectedTopics.includes(question.cat))
+ );
 }
 
 function updateSetup() {
- const count=filtered().length,rank=$("rank").value,topic=$("topic").value;
- const scope=[topic||"All topics",rank||"All belt ranks"].join(" · ");
+ const count=filtered().length,selectedRanks=selectedValues("rank"),selectedTopics=selectedValues("topic");
+ updateFilterSummary("rank","rankSummary","All belt ranks","ranks");
+ updateFilterSummary("topic","topicSummary","All topics","topics");
+ const topicLabel=selectedTopics.length?selectedTopics.join(", "):"All topics";
+ const rankLabel=selectedRanks.length?selectedRanks.join(", "):"All belt ranks";
+ const scope=[topicLabel,rankLabel].join(" · ");
  $("scope").innerHTML=`<strong>${escapeHtml(scope)}</strong> · ${count} question${count===1?"":"s"} available`;
  $("start").disabled=count===0;
 }
 
-$("rank").addEventListener("change",updateSetup);
-$("topic").addEventListener("change",updateSetup);
+$("clearRanks").addEventListener("click",()=>{
+ document.querySelectorAll('input[name="rank"]:checked').forEach(option=>{option.checked=false});
+ updateSetup();
+});
+$("clearTopics").addEventListener("click",()=>{
+ document.querySelectorAll('input[name="topic"]:checked').forEach(option=>{option.checked=false});
+ updateSetup();
+});
 
 function start(list=null) {
  let pool=list||filtered();

@@ -49,12 +49,26 @@
 <section class="card" id="setup">
 <h2>Set up your quiz</h2>
 <div class="controls">
-<div class="field"><label for="rank">Belt rank</label><select id="rank"><option value="">All belt ranks</option></select></div>
-<div class="field"><label for="topic">Topic</label><select id="topic"><option value="">All topics</option></select></div>
+<div class="field">
+<span class="field-label">Belt ranks</span>
+<details class="multi-select">
+<summary id="rankSummary">All belt ranks</summary>
+<div id="rankOptions" class="multi-options" role="group" aria-label="Filter by belt rank"></div>
+<button type="button" class="text-button" id="clearRanks">Clear selection (all ranks)</button>
+</details>
+</div>
+<div class="field">
+<span class="field-label">Topics</span>
+<details class="multi-select">
+<summary id="topicSummary">All topics</summary>
+<div id="topicOptions" class="multi-options" role="group" aria-label="Filter by topic"></div>
+<button type="button" class="text-button" id="clearTopics">Clear selection (all topics)</button>
+</details>
+</div>
 <div class="field"><label for="count">Question count</label><select id="count"><option value="20">20 questions</option><option value="40">40 questions</option><option value="60">60 questions</option><option value="all">All available questions</option></select></div>
 </div>
 <p id="scope"></p>
-<p class="muted">Choose a belt rank, topic, or both. Answers are revealed after you submit. Progress is saved in this browser and synced when you sign in.</p>
+<p class="muted">Choose one or more belt ranks and topics. Leave a filter empty to include all. Answers are revealed after you submit. Progress is saved in this browser and synced when you sign in.</p>
 <div class="actions"><button id="start">Start quiz</button></div>
 </section>
 <section class="card" id="quiz">
