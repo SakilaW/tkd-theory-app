@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Progress · Taekwon-Do Theory</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header><div class="wrap">
+<h1>Taekwon-Do Theory (10th Gup - 1st Gup)</h1>
+<nav class="site-nav" aria-label="Main navigation">
+<a href="index.html">Quiz</a>
+<a href="progress.html" aria-current="page">Progress</a>
+<a href="question-bank.html">Question Bank</a>
+</nav>
+</div></header>
+<main>
+<section class="card" id="dashboard">
+<h2>Your progress</h2>
+<div class="stats">
+<div class="stat"><strong id="statQuizzes">0</strong><span>Quizzes completed</span></div>
+<div class="stat"><strong id="statBest">—</strong><span>Best score</span></div>
+<div class="stat"><strong id="statLast">—</strong><span>Last score</span></div>
+</div>
+<div id="focusBox"></div>
+<h3>By belt rank</h3><div id="progRank"></div>
+<h3>By topic</h3><div id="progTopic"></div>
+<p class="legend">Bar = accuracy across all your answers. “Seen” = distinct questions you’ve attempted out of those available. Green ≥ 80%, amber 60–79%, red &lt; 60%. Tap a row for the breakdown.</p>
+<p class="footer">Stored locally on this device/browser only; it won’t sync to another device.</p>
+<div class="actions"><button class="secondary" id="resetProgress">Reset saved stats</button></div>
+</section>
+</main>
+<script src="data.js"></script>
+<script src="shared.js"></script>
+<script src="progress.js"></script>
+</body>
+</html>

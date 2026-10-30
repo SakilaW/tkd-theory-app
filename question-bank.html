@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Question Bank · Taekwon-Do Theory</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header><div class="wrap">
+<h1>Taekwon-Do Theory (10th Gup - 1st Gup)</h1>
+<nav class="site-nav" aria-label="Main navigation">
+<a href="index.html">Quiz</a>
+<a href="progress.html">Progress</a>
+<a href="question-bank.html" aria-current="page">Question Bank</a>
+</nav>
+</div></header>
+<main>
+<section class="card">
+<h2>Question Bank</h2>
+<p class="muted">Browse questions, answers, and pattern diagrams from the quiz.</p>
+<div class="controls bank-controls">
+<div class="field"><label for="search">Search questions</label><input id="search" type="search" placeholder="Search question, answer, topic, or rank"></div>
+<div class="field"><label for="rankFilter">Belt rank</label><select id="rankFilter"><option value="">All belt ranks</option></select></div>
+<div class="field"><label for="topicFilter">Topic</label><select id="topicFilter"><option value="">All topics</option></select></div>
+</div>
+<p id="bankCount" class="muted" aria-live="polite"></p>
+<div id="questionList" class="bank-list"></div>
+</section>
+</main>
+<script src="data.js"></script>
+<script src="shared.js"></script>
+<script src="question-bank.js"></script>
+</body>
+</html>
