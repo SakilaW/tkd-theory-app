@@ -107,7 +107,7 @@ function renderBreakdown() {
  $("resBreak").innerHTML=`<div class="muted">By rank</div>${group("rank",ranks)}<div class="muted" style="margin-top:10px">By topic</div>${group("cat")}`;
 }
 
-function submitQuiz() {
+async function submitQuiz() {
  const correct=quiz.reduce((total,question,i)=>total+(answers[i]===question.a?1:0),0);
  const percent=Math.round(correct/quiz.length*100);
  const progress=loadProgress();
@@ -123,6 +123,7 @@ function submitQuiz() {
   if(answers[i]===question.a)result.c++;
  });
  localStorage.setItem("tkdQ",JSON.stringify(questions));
+ await window.saveProgressToCloud();
  renderBreakdown();
  $("quiz").style.display="none";
  $("results").style.display="block";

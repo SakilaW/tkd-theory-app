@@ -54,12 +54,14 @@ function updateStats() {
  $("statLast").textContent=progress.last===null?"—":progress.last+"%";
 }
 
-$("resetProgress").onclick=()=>{
+$("resetProgress").onclick=async()=>{
  if(confirm("Reset saved quiz statistics on this browser?")) {
   localStorage.removeItem("tkdProgress");
   localStorage.removeItem("tkdQ");
   updateStats();
+  await window.saveProgressToCloud();
  }
 };
 
+window.addEventListener("tkd:progress-updated",updateStats);
 updateStats();
