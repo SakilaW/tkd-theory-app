@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Progress · Taekwon-Do Theory</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header><div class="wrap">
+<h1>Taekwon-Do Theory (10th Gup - 1st Gup)</h1>
+<nav class="site-nav" aria-label="Main navigation">
+<a href="index.html">Quiz</a>
+<a href="progress.html" aria-current="page">Progress</a>
+<a href="question-bank.html">Question Bank</a>
+</nav>
+</div></header>
+<main>
+<details class="sync-panel card">
+<summary><span>Save progress across devices</span><span class="sync-badge" id="syncBadge">On this device</span></summary>
+<div class="sync-content">
+<p id="syncMessage" class="muted" aria-live="polite">Progress is saved on this device until you connect an account.</p>
+<div id="syncNotConfigured">
+<p class="muted">Connect a free Supabase project to create an account and sync your quiz progress.</p>
+<form id="syncConfigForm" class="sync-fields">
+<div class="field"><label for="supabaseUrl">Supabase project URL</label><input id="supabaseUrl" type="url" placeholder="https://your-project.supabase.co" autocomplete="url" required></div>
+<div class="field"><label for="supabaseKey">Publishable key (or legacy anon key)</label><input id="supabaseKey" type="password" placeholder="sb_publishable_..." autocomplete="off" required></div>
+<button type="submit">Connect project</button>
+</form>
+<p class="footer">Do not enter a service-role key. Follow the setup steps in <a href="README.md#sync-progress-with-supabase">the README</a>.</p>
+</div>
+<div id="syncConfigured" hidden>
+<p class="muted">Connected to <strong id="configuredProject"></strong>.</p>
+<div id="signedOut">
+<div class="sync-fields">
+<div class="field"><label for="accountEmailInput">Email</label><input id="accountEmailInput" type="email" placeholder="you@example.com" autocomplete="email"></div>
+<div class="field"><label for="credentialInput">Password</label><input id="credentialInput" type="password" autocomplete="current-password"></div>
+</div>
+<div class="actions"><button type="button" id="signIn">Sign in</button><button type="button" class="secondary" id="signUp">Create account</button></div>
+</div>
+<div id="signedIn" hidden>
+<p>Signed in as <strong id="accountEmail"></strong></p>
+<button type="button" class="secondary" id="signOut">Sign out</button>
+</div>
+<button type="button" class="text-button" id="changeSupabase">Change Supabase project</button>
+</div>
+</div>
+</details>
+<section class="card" id="dashboard">
+<h2>Your progress</h2>
+<div class="stats">
+<div class="stat"><strong id="statQuizzes">0</strong><span>Quizzes completed</span></div>
+<div class="stat"><strong id="statBest">—</strong><span>Best score</span></div>
+<div class="stat"><strong id="statLast">—</strong><span>Last score</span></div>
+</div>
+<div id="focusBox"></div>
+<h3>By belt rank</h3><div id="progRank"></div>
+<h3>By topic</h3><div id="progTopic"></div>
+<p class="legend">Bar = accuracy across all your answers. “Seen” = distinct questions you’ve attempted out of those available. Green ≥ 80%, amber 60–79%, red &lt; 60%. Tap a row for the breakdown.</p>
+<p class="footer">Progress is saved in this browser and syncs across devices when you sign in.</p>
+<div class="actions"><button class="secondary" id="resetProgress">Reset saved stats</button></div>
+</section>
+</main>
+<script src="data.js"></script>
+<script src="shared.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="progress.js"></script>
+</body>
+</html>
