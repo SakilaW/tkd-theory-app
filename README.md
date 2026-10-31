@@ -15,6 +15,6 @@ Supabase's free plan includes authentication and a Postgres database. The app co
 5. Create an account with an email and password, then sign in. If email confirmation is enabled, confirm the account using the email Supabase sends.
 6. To sign in on another device, open the app there, enter the same project URL and key, and sign in with that account.
 
-On a browser without an account-linked progress record, its existing local progress is combined with the account's cloud progress. If you practise while signed out, those new attempts are merged the next time you sign back in to the same account. Progress already linked to a different account is not transferred. Completed quizzes sync to the signed-in account; when signed out, progress continues to save locally.
+On a browser without an account-linked progress record, its existing local progress is combined with the account's cloud progress. If you practise while signed out, those new attempts are merged the next time you sign back in to the same account. Progress already linked to a different account is not transferred. Completed quizzes and the latest 10 quiz reviews sync to the signed-in account; when signed out, progress continues to save locally.
 
 For email confirmation, configure the Supabase Auth URL settings to include the app's local and deployed URLs. Supabase Free projects may pause after a week of inactivity; resume the project from the Supabase dashboard if sign-in or sync stops responding.

@@ -30,7 +30,7 @@ function updateFilterSummary(name,summaryId,allLabel,selectedLabel) {
  $(summaryId).textContent=selected.length?`${selected.length} ${selectedLabel} selected`:allLabel;
 }
 
-let quiz=[],answers=[],index=0,reviewIncorrectOnly=false;
+let quiz=[],answers=[],index=0,reviewIncorrectOnly=false,submittingQuiz=false;
 
 function shuffle(items) {
  for(let i=items.length-1;i>0;i--) {
@@ -100,6 +100,7 @@ $("clearTopics").addEventListener("click",()=>{
 });
 
 function start(list=null) {
+ submittingQuiz=false;
  let pool=list||filtered();
  pool=shuffle([...pool]);
  const count=list?pool.length:$("count").value==="all"?pool.length:Number($("count").value);
@@ -212,12 +213,35 @@ function renderReview() {
 }
 
 async function submitQuiz() {
+ if(submittingQuiz)return;
+ submittingQuiz=true;
+ $("submit").disabled=true;
  const correct=quiz.reduce((total,question,i)=>total+(answers[i]===question.a?1:0),0);
  const percent=Math.round(correct/quiz.length*100);
  const progress=loadProgress();
  progress.quizzes++;
  progress.best=Math.max(progress.best,percent);
  progress.last=percent;
+ const historyId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
+ const historyEntry={
+  id:historyId,
+  completedAt:new Date().toISOString(),
+  course:quiz[0]?.course||selectedCourse||"Quiz",
+  score:percent,
+  correct,
+  total:quiz.length,
+  questions:quiz.map((question,i)=>({
+   q:question.q,
+   a:question.a,
+   selected:answers[i],
+   options:question.options,
+   cat:question.cat,
+   rank:question.rank,
+   why:question.why||"",
+   image:question.image||null
+  }))
+ };
+ progress.history=[historyEntry,...progress.history].slice(0,window.QUIZ_HISTORY_LIMIT);
  localStorage.setItem("tkdProgress",JSON.stringify(progress));
  const questions=loadQ();
  quiz.forEach((question,i)=>{
@@ -227,7 +251,6 @@ async function submitQuiz() {
   if(answers[i]===question.a)result.c++;
  });
  localStorage.setItem("tkdQ",JSON.stringify(questions));
- await window.saveProgressToCloud();
  renderBreakdown();
  $("quiz").style.display="none";
  $("results").style.display="block";
@@ -238,6 +261,12 @@ async function submitQuiz() {
  renderReview();
  $("retryWrong").disabled=correct===quiz.length;
  window.scrollTo(0,0);
+ try {
+  await window.saveProgressToCloud();
+ } finally {
+  submittingQuiz=false;
+  $("submit").disabled=false;
+ }
 }
 
 $("prev").onclick=()=>{index--;render()};

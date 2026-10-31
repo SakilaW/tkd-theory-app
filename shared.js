@@ -1,4 +1,5 @@
 const $ = id => document.getElementById(id);
+window.QUIZ_HISTORY_LIMIT=10;
 
 function escapeHtml(value) {
  return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -27,9 +28,12 @@ function loadQ() {
 
 function loadProgress() {
  try {
-  return JSON.parse(localStorage.getItem("tkdProgress")||'{"quizzes":0,"best":0,"last":null}');
+  const progress=JSON.parse(localStorage.getItem("tkdProgress")||'{"quizzes":0,"best":0,"last":null}');
+  return progress&&typeof progress==="object"
+   ?{...progress,history:Array.isArray(progress.history)?progress.history:[]}
+   :{quizzes:0,best:0,last:null,history:[]};
  } catch(error) {
   console.error("Could not read saved quiz progress.",error);
-  return {quizzes:0,best:0,last:null};
+  return {quizzes:0,best:0,last:null,history:[]};
  }
 }

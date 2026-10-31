@@ -67,11 +67,23 @@ function mergeLocalProgress(quizSummary,questionStats,baseline=null) {
   };
  }
  const newQuizzes=Math.max(0,(localSummary.quizzes||0)-(baseline?.quizSummary?.quizzes||0));
+ const baselineHistoryIds=new Set((baseline?.quizSummary?.history||[]).map(attempt=>attempt.id));
+ const localHistory=localSummary.history||[];
+ const unsyncedHistory=localHistory.filter(attempt=>!baselineHistoryIds.has(attempt.id));
+ const historyById=new Map();
+ for(const attempt of [...(quizSummary.history||[]),...unsyncedHistory]) {
+  const key=attempt.id||`${attempt.completedAt}:${attempt.course}:${attempt.total}`;
+  if(!historyById.has(key))historyById.set(key,attempt);
+ }
+ const history=[...historyById.values()]
+  .sort((left,right)=>Date.parse(right.completedAt)-Date.parse(left.completedAt))
+  .slice(0,window.QUIZ_HISTORY_LIMIT);
  return {
   summary:{
    quizzes:(quizSummary.quizzes||0)+newQuizzes,
    best:newQuizzes?Math.max(quizSummary.best||0,localSummary.best||0):quizSummary.best||0,
-   last:newQuizzes?localSummary.last:quizSummary.last
+   last:newQuizzes?localSummary.last:quizSummary.last,
+   history
   },
   questions:mergedQuestions
  };
@@ -109,7 +121,7 @@ async function syncAccountProgress(user) {
   if(!previousOwner||baseline) {
    const localSummary=loadProgress(),localQuestions=loadQ();
    const hasUnsyncedProgress=baseline
-    ?localSummary.quizzes>(baseline.quizSummary?.quizzes||0)||Object.entries(localQuestions).some(([key,result])=>{
+    ?localSummary.quizzes>(baseline.quizSummary?.quizzes||0)||(localSummary.history||[]).some(attempt=>!(baseline.quizSummary?.history||[]).some(previous=>previous.id===attempt.id))||Object.entries(localQuestions).some(([key,result])=>{
       const previous=baseline.questionStats?.[key]||{a:0,c:0};
       return result.a>(previous.a||0)||result.c>(previous.c||0);
      })
