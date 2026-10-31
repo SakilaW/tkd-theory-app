@@ -90,6 +90,59 @@ function updateSetup() {
 }
 
 document.querySelectorAll('input[name="course"]').forEach(option=>option.addEventListener("change",updateSetup));
+const courseTrack=$("courseOptions");
+const coursePrevious=$("coursePrevious");
+const courseNext=$("courseNext");
+function updateCourseCarouselControls() {
+ coursePrevious.disabled=courseTrack.scrollLeft<=1;
+ courseNext.disabled=courseTrack.scrollLeft+courseTrack.clientWidth>=courseTrack.scrollWidth-1;
+}
+coursePrevious.addEventListener("click",()=>{
+ courseTrack.scrollBy({
+  left:-courseTrack.clientWidth*.8,
+  behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"
+ });
+});
+courseNext.addEventListener("click",()=>{
+ courseTrack.scrollBy({
+  left:courseTrack.clientWidth*.8,
+  behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"
+ });
+});
+courseTrack.addEventListener("scroll",updateCourseCarouselControls,{passive:true});
+window.addEventListener("resize",updateCourseCarouselControls);
+updateCourseCarouselControls();
+courseTrack.querySelectorAll(".course-option").forEach(option=>{
+ let pointerFrame=0;
+ option.addEventListener("pointermove",event=>{
+  if(event.pointerType!=="mouse"||window.matchMedia("(prefers-reduced-motion: reduce)").matches||pointerFrame)return;
+  pointerFrame=requestAnimationFrame(()=>{
+   pointerFrame=0;
+   const bounds=option.getBoundingClientRect();
+   const x=(event.clientX-bounds.left)/bounds.width-.5;
+   const y=(event.clientY-bounds.top)/bounds.height-.5;
+   option.style.setProperty("--tilt-x",`${(x*2).toFixed(2)}deg`);
+   option.style.setProperty("--tilt-y",`${(-y*1.5).toFixed(2)}deg`);
+   option.style.setProperty("--art-x",`${(x*10).toFixed(1)}px`);
+   option.style.setProperty("--art-y",`${(y*8).toFixed(1)}px`);
+  });
+ });
+ option.addEventListener("pointerleave",()=>{
+  if(pointerFrame)cancelAnimationFrame(pointerFrame);
+  pointerFrame=0;
+  option.style.removeProperty("--tilt-x");
+  option.style.removeProperty("--tilt-y");
+  option.style.removeProperty("--art-x");
+  option.style.removeProperty("--art-y");
+ });
+ option.addEventListener("click",()=>{
+  option.scrollIntoView({
+   behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",
+   block:"nearest",
+   inline:"center"
+  });
+ });
+});
 $("clearRanks").addEventListener("click",()=>{
  document.querySelectorAll('input[name="rank"]:checked').forEach(option=>{option.checked=false});
  updateSetup();
@@ -110,6 +163,7 @@ function start(list=null) {
  $("setup").style.display="none";
  $("results").style.display="none";
  $("quiz").style.display="block";
+ document.body.classList.add("quiz-active");
  render();
  window.scrollTo(0,0);
 }
@@ -254,6 +308,7 @@ async function submitQuiz() {
  renderBreakdown();
  $("quiz").style.display="none";
  $("results").style.display="block";
+ document.body.classList.remove("quiz-active");
  $("score").textContent=percent+"%";
  $("rightCount").textContent=`${correct}/${quiz.length}`;
  $("wrongCount").textContent=quiz.length-correct;
@@ -295,6 +350,7 @@ $("start").onclick=()=>start();
 $("newQuiz").onclick=()=>{
  $("results").style.display="none";
  $("setup").style.display="block";
+ document.body.classList.remove("quiz-active");
  window.scrollTo(0,0);
 };
 $("retryWrong").onclick=()=>{

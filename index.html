@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quiz · Taekwon-Do Theory</title>
-<link rel="stylesheet" href="styles.css?v=20261101">
+<link rel="stylesheet" href="styles.css?v=20261104">
 </head>
 <body>
 <header><div class="wrap">
-<h1>Taekwon-Do Theory (10th Gup - 1st Gup)</h1>
+<a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">T</span><span>ITKD <span>THEORY</span></span></a>
 <nav class="site-nav" aria-label="Main navigation">
 <a href="index.html" aria-current="page">Quiz</a>
 <a href="progress.html">Progress</a>
@@ -16,6 +16,48 @@
 </nav>
 </div></header>
 <main>
+<section class="card home-hero" id="setup">
+<div class="hero-copy">
+<span class="eyebrow"><span class="eyebrow-dot"></span> YOUR THEORY TRAINING SPACE</span>
+<h1>Train your <span>knowledge.</span></h1>
+<p>Build confidence in every technique, principle, and detail.</p>
+</div>
+<fieldset class="course-picker">
+<legend class="visually-hidden">Choose what you're studying</legend>
+<div class="carousel-heading"><span class="carousel-title">Choose a study path</span><div class="carousel-controls" aria-label="Study path carousel controls"><button type="button" class="carousel-arrow" id="coursePrevious" aria-label="Previous study path" disabled>←</button><button type="button" class="carousel-arrow" id="courseNext" aria-label="Next study path">→</button></div></div>
+<div class="course-options" id="courseOptions" role="group" aria-label="Available study courses" tabindex="0">
+<label class="course-option course-technique"><input type="radio" name="course" value="Coloured Belt Techniques Syllabus"><span class="course-art" aria-hidden="true"><span class="art-orbit art-orbit-one"></span><span class="art-orbit art-orbit-two"></span><span class="art-kick">도</span><span class="art-caption">DISCIPLINE<br>IN MOTION</span><span class="art-number">01 / 02</span></span><span class="course-copy"><small class="course-kicker">TECHNIQUE &amp; THEORY</small><strong>Coloured Belt Techniques</strong><small>Explore your syllabus by belt rank and topic.</small><span class="course-cta">Explore syllabus <span aria-hidden="true">↗</span></span></span><span class="course-mark" aria-hidden="true"></span></label>
+<label class="course-option course-governance"><input type="radio" name="course" value="ITKD Governance"><span class="course-art" aria-hidden="true"><span class="art-orbit art-orbit-one"></span><span class="art-orbit art-orbit-two"></span><span class="art-kick">인</span><span class="art-caption">THE PEOPLE<br>BEHIND THE ART</span><span class="art-number">02 / 02</span></span><span class="course-copy"><small class="course-kicker">PEOPLE &amp; ORGANISATION</small><strong>ITKD Governance</strong><small>Meet the people and structure behind ITKD.</small><span class="course-cta">Explore governance <span aria-hidden="true">↗</span></span></span><span class="course-mark" aria-hidden="true"></span></label>
+</div>
+<p class="carousel-hint">Swipe or scroll to explore <span aria-hidden="true">·</span> Select a path to customise your quiz</p>
+</fieldset>
+<div id="quizOptions" hidden>
+<div class="controls">
+<div id="syllabusFilters" class="controls">
+<div class="field">
+<span class="field-label">Belt ranks</span>
+<details class="multi-select">
+<summary id="rankSummary">All belt ranks</summary>
+<div id="rankOptions" class="multi-options" role="group" aria-label="Filter by belt rank"></div>
+<button type="button" class="text-button" id="clearRanks">Clear selection (all ranks)</button>
+</details>
+</div>
+<div class="field">
+<span class="field-label">Topics</span>
+<details class="multi-select">
+<summary id="topicSummary">All topics</summary>
+<div id="topicOptions" class="multi-options" role="group" aria-label="Filter by topic"></div>
+<button type="button" class="text-button" id="clearTopics">Clear selection (all topics)</button>
+</details>
+</div>
+</div>
+<div class="field"><label for="count">Question count</label><select id="count"><option value="20">20 questions</option><option value="40">40 questions</option><option value="60">60 questions</option><option value="all">All available questions</option></select></div>
+</div>
+<p id="scope"></p>
+<p id="setupHint" class="muted"></p>
+<div class="actions"><button id="start">Start quiz</button></div>
+</div>
+</section>
 <details class="sync-panel card">
 <summary><span>Save progress across devices</span><span class="sync-badge" id="syncBadge">On this device</span></summary>
 <div class="sync-content">
@@ -46,42 +88,6 @@
 </div>
 </div>
 </details>
-<section class="card" id="setup">
-<h2>Set up your quiz</h2>
-<fieldset class="course-picker">
-<legend>Choose what you're studying</legend>
-<div class="course-options">
-<label class="course-option"><input type="radio" name="course" value="Coloured Belt Techniques Syllabus"><span><strong>Coloured Belt Techniques Syllabus</strong><small>Practise belt ranks and syllabus topics.</small></span></label>
-<label class="course-option"><input type="radio" name="course" value="ITKD Governance"><span><strong>ITKD Governance</strong><small>Practise governance and personnel questions.</small></span></label>
-</div>
-</fieldset>
-<div id="quizOptions" hidden>
-<div class="controls">
-<div id="syllabusFilters" class="controls">
-<div class="field">
-<span class="field-label">Belt ranks</span>
-<details class="multi-select">
-<summary id="rankSummary">All belt ranks</summary>
-<div id="rankOptions" class="multi-options" role="group" aria-label="Filter by belt rank"></div>
-<button type="button" class="text-button" id="clearRanks">Clear selection (all ranks)</button>
-</details>
-</div>
-<div class="field">
-<span class="field-label">Topics</span>
-<details class="multi-select">
-<summary id="topicSummary">All topics</summary>
-<div id="topicOptions" class="multi-options" role="group" aria-label="Filter by topic"></div>
-<button type="button" class="text-button" id="clearTopics">Clear selection (all topics)</button>
-</details>
-</div>
-</div>
-<div class="field"><label for="count">Question count</label><select id="count"><option value="20">20 questions</option><option value="40">40 questions</option><option value="60">60 questions</option><option value="all">All available questions</option></select></div>
-</div>
-<p id="scope"></p>
-<p id="setupHint" class="muted"></p>
-<div class="actions"><button id="start">Start quiz</button></div>
-</div>
-</section>
 <section class="card" id="quiz">
 <div class="qtop"><span id="qcounter">Question 1</span><span id="qmeta"></span></div>
 <div class="progress" id="quizProgress" role="progressbar" aria-label="Quiz questions answered" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="bar"></div></div>
@@ -120,6 +126,6 @@
 <script src="shared.js?v=20261101"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js?v=20261101"></script>
-<script src="quiz.js?v=20261101"></script>
+<script src="quiz.js?v=20261104"></script>
 </body>
 </html>
