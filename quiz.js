@@ -136,10 +136,11 @@ courseTrack.querySelectorAll(".course-option").forEach(option=>{
   option.style.removeProperty("--art-y");
  });
  option.addEventListener("click",()=>{
-  option.scrollIntoView({
-   behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",
-   block:"nearest",
-   inline:"center"
+  const bounds=option.getBoundingClientRect();
+  const trackBounds=courseTrack.getBoundingClientRect();
+  courseTrack.scrollTo({
+   left:courseTrack.scrollLeft+bounds.left-trackBounds.left-(courseTrack.clientWidth-bounds.width)/2,
+   behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"
   });
  });
 });
