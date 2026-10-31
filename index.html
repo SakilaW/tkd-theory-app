@@ -84,10 +84,10 @@
 </section>
 <section class="card" id="quiz">
 <div class="qtop"><span id="qcounter">Question 1</span><span id="qmeta"></span></div>
-<div class="progress"><div id="bar"></div></div>
+<div class="progress" id="quizProgress" role="progressbar" aria-label="Quiz questions answered" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="bar"></div></div>
 <div class="question" id="questionText"></div><div id="questionMedia"></div><div class="options" id="options"></div>
 <div class="actions"><button class="secondary" id="prev">Previous</button><button id="next">Next question</button><button id="submit" style="display:none">Submit quiz</button></div>
-<p class="muted" id="answeredCount"></p>
+<p class="muted" id="answeredCount" aria-live="polite"></p>
 </section>
 <section class="card" id="results">
 <h2>Quiz results</h2>
@@ -98,8 +98,15 @@
 </div>
 <p id="resultMessage"></p>
 <div class="actions"><button id="retryWrong">Practise missed questions</button><button class="secondary" id="newQuiz">New quiz</button></div>
-<h3>Performance this quiz</h3><div id="resBreak"></div>
-<details open><summary>Review answers</summary><div id="reviewList"></div></details>
+<h3>Explore your results</h3>
+<div class="result-switcher" role="group" aria-label="Quiz result views">
+<button type="button" class="result-switch active" id="showRank" aria-controls="rankResults" aria-pressed="true">By rank</button>
+<button type="button" class="result-switch" id="showTopic" aria-controls="topicResults" aria-pressed="false">By topic</button>
+<button type="button" class="result-switch" id="showReview" aria-controls="reviewResults" aria-pressed="false">Review answers</button>
+</div>
+<section class="result-panel" id="rankResults" aria-label="Performance by rank"><div id="resRank"></div></section>
+<section class="result-panel" id="topicResults" aria-label="Performance by topic" hidden><div id="resTopic"></div></section>
+<section class="result-panel" id="reviewResults" aria-label="Review answers" hidden><div id="reviewList"></div></section>
 </section>
 </main>
 <script src="data.js"></script>

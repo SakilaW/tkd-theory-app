@@ -115,6 +115,9 @@ function start(list=null) {
 
 function render() {
  const question=quiz[index];
+ $("questionText").classList.remove("is-entering");
+ void $("questionText").offsetWidth;
+ $("questionText").classList.add("is-entering");
  $("qcounter").textContent=`Question ${index+1} of ${quiz.length}`;
  $("qmeta").textContent=`${question.cat} · ${question.rank||NO_RANK_LABEL}`;
  $("bar").style.width=(index+1)/quiz.length*100+"%";
@@ -125,13 +128,27 @@ function render() {
   const button=document.createElement("button");
   button.className="option"+(answers[index]===option?" selected":"");
   button.innerHTML=`<span class="letter">${String.fromCharCode(65+i)}</span>${escapeHtml(option)}`;
-  button.onclick=()=>{answers[index]=option;render()};
+  button.onclick=()=>{
+   answers[index]=option;
+   $("options").querySelectorAll(".option").forEach((answerButton,answerIndex)=>{
+    answerButton.classList.toggle("selected",answerIndex===i);
+   });
+   updateAnsweredProgress();
+  };
   $("options").appendChild(button);
  });
  $("prev").disabled=index===0;
  $("next").style.display=index===quiz.length-1?"none":"inline-block";
  $("submit").style.display=index===quiz.length-1?"inline-block":"none";
- $("answeredCount").textContent=`${answers.filter(answer=>answer!==null).length} of ${quiz.length} answered`;
+ updateAnsweredProgress();
+}
+
+function updateAnsweredProgress() {
+ const answered=answers.filter(answer=>answer!==null).length;
+ const percent=Math.round(answered/quiz.length*100);
+ $("bar").style.width=percent+"%";
+ $("quizProgress").setAttribute("aria-valuenow",String(percent));
+ $("answeredCount").textContent=`${answered} of ${quiz.length} answered · ${percent}% complete`;
 }
 
 function renderBreakdown() {
@@ -153,7 +170,19 @@ function renderBreakdown() {
    return `<div class="prow">${header}</div>`;
   }).join("");
  };
- $("resBreak").innerHTML=`<div class="muted">By rank</div>${group("rank",rankOptions)}<div class="muted" style="margin-top:10px">By topic</div>${group("cat")}`;
+ $("resRank").innerHTML=group("rank",rankOptions);
+ $("resTopic").innerHTML=group("cat");
+ showResultView("rank");
+}
+
+function showResultView(view) {
+ const views=["rank","topic","review"];
+ for(const name of views) {
+  const active=name===view;
+  $(`${name}Results`).hidden=!active;
+  $(`show${name[0].toUpperCase()+name.slice(1)}`).classList.toggle("active",active);
+  $(`show${name[0].toUpperCase()+name.slice(1)}`).setAttribute("aria-pressed",String(active));
+ }
 }
 
 async function submitQuiz() {
@@ -195,6 +224,9 @@ async function submitQuiz() {
 $("prev").onclick=()=>{index--;render()};
 $("next").onclick=()=>{index++;render()};
 $("submit").onclick=submitQuiz;
+$("showRank").onclick=()=>showResultView("rank");
+$("showTopic").onclick=()=>showResultView("topic");
+$("showReview").onclick=()=>showResultView("review");
 $("start").onclick=()=>start();
 $("newQuiz").onclick=()=>{
  $("results").style.display="none";
