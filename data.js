@@ -16,6 +16,8 @@ FACTS.push(
 const ranks = ["White belt","Yellow stripe","Yellow belt","Green stripe","Green belt","Blue stripe","Blue belt","Red stripe","Red belt","Black stripe"];
 const NO_RANK_LABEL = "No belt rank";
 const rankOptions = [...ranks,NO_RANK_LABEL];
+const COLOURED_BELT_COURSE = "Coloured Belt Techniques Syllabus";
+const ITKD_GOVERNANCE_COURSE = "ITKD Governance";
 const PERSONNEL_FACTS = [
  {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD President?",a:"Master Gray Patterson",wrong:["Master Kane Raukura","Grand Master Paul McPhail","Master Kevin Joe"]},
  {cat:"ITKD Personnel",rank:null,q:"Who are the elected ITKD Board members?",a:"Master Kane Raukura; Mr Nick Lourantos; Master Kevin Joe; Mr Bjarne Morris",wrong:["Mrs Fiona Parrant; Ms Karen Long; Mr Mitchell Alexander","Grand Master Evan Davidson; Grand Master Paul McPhail; Mr Brendan Doogan","Mr Matt and Mrs Lisa Davey; Mrs Natasha Iotua; Mrs Karen Atrill"]},
@@ -32,7 +34,7 @@ const PERSONNEL_FACTS = [
  {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Child Protection Officer?",a:"Master Kane Raukura",wrong:["Master Kevin Joe","Master Gray Patterson","Mr Nick Lourantos"]},
  {cat:"ITKD Personnel",rank:null,q:"Who provides ITKD JustGo Support?",a:"Mr Shaun Tolley",wrong:["Mr Morgan Lloyd","Mr Nick Lourantos","Mr Brendan Doogan"]},
  {cat:"ITKD Personnel",rank:null,q:"Who are the ITKD Auckland North Regional Directors?",a:"Mr Matt and Mrs Lisa Davey",wrong:["Mrs Natasha Iotua","Mrs Karen Atrill","Mr Alan Miller"]},
- {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Counties Manukau Regional Director?",a:"Mrs Natasha Iotua",wrong:["Mrs Anika Koziarski","Mrs Karen Atrill","Mrs Lisa Davey"]}
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Counties Manukau Regional Director?",a:"Mrs Natasha Iotua",wrong:["Mrs Anika Koziarski","Mrs Karen Atrill","Mrs Lisa Davey"]},
  {cat:"ITKD Personnel",rank:null,q:"Who is the Midlands Regional Director?",a:"Mrs Karen Atrill",wrong:["Mrs Natasha Iotua","Mrs Anika Koziarski","Mrs Debbie Hart"]},
  {cat:"ITKD Personnel",rank:null,q:"Who is the Central Regional Director?",a:"Mr Alan Miller",wrong:["Mr Morgan Lloyd","Mr Matt Davey","Mr Shaun Tolley"]},
  {cat:"ITKD Personnel",rank:null,q:"Who is the Wellington Regional Director?",a:"Mrs Anika Koziarski",wrong:["Mrs Karen Atrill","Mrs Natasha Iotua","Mrs Lisa Davey"]},
@@ -51,12 +53,15 @@ const all = [];
 const seen = new Set();
 for (const t of TERMS) {
   for (const q of [
-    {cat:t.cat,rank:t.rank,q:`What is the Korean term for “${t.en}”?`,a:t.ko,type:"term",en:t.en,ko:t.ko,why:`${t.en} = ${t.ko} (as listed in the syllabus).`},
-    {cat:t.cat,rank:t.rank,q:`What does “${t.ko}” mean in English?`,a:t.en,type:"term",en:t.en,ko:t.ko,why:`${t.ko} = ${t.en} (as listed in the syllabus).`}
+    {cat:t.cat,rank:t.rank,q:`What is the Korean term for “${t.en}”?`,a:t.ko,type:"term",en:t.en,ko:t.ko,why:`${t.en} = ${t.ko} (as listed in the syllabus).`,course:COLOURED_BELT_COURSE},
+    {cat:t.cat,rank:t.rank,q:`What does “${t.ko}” mean in English?`,a:t.en,type:"term",en:t.en,ko:t.ko,why:`${t.ko} = ${t.en} (as listed in the syllabus).`,course:COLOURED_BELT_COURSE}
   ]) { if(!seen.has(q.q.toLowerCase())) {seen.add(q.q.toLowerCase());all.push(q)} }
 }
-for(const f of [...FACTS,...PERSONNEL_FACTS]){
- const key=f.type==="diagram"?`${f.q}::${f.rank}`.toLowerCase():f.q.toLowerCase();
- if(!seen.has(key)){seen.add(key);all.push({...f,type:f.type||"fact"})}
+for(const [facts,course] of [[FACTS,COLOURED_BELT_COURSE],[PERSONNEL_FACTS,ITKD_GOVERNANCE_COURSE]]){
+ for(const f of facts){
+  const key=f.type==="diagram"?`${f.q}::${f.rank}`.toLowerCase():f.q.toLowerCase();
+  if(!seen.has(key)){seen.add(key);all.push({...f,type:f.type||"fact",course})}
+ }
 }
 const topics = [...new Set(all.map(q=>q.cat))].sort();
+const syllabusTopics = [...new Set(all.filter(q=>q.course===COLOURED_BELT_COURSE).map(q=>q.cat))].sort();

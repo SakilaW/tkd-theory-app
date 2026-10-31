@@ -16,12 +16,14 @@ function addFilterOptions(containerId,values,name) {
  }
 }
 
-addFilterOptions("rankOptions",rankOptions,"rank");
-addFilterOptions("topicOptions",topics,"topic");
+addFilterOptions("rankOptions",ranks,"rank");
+addFilterOptions("topicOptions",syllabusTopics,"topic");
 
 function selectedValues(name) {
  return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(option=>option.value);
 }
+
+let selectedCourse=null;
 
 function updateFilterSummary(name,summaryId,allLabel,selectedLabel) {
  const selected=selectedValues(name);
@@ -54,24 +56,40 @@ function buildOptions(question) {
 }
 
 function filtered() {
+ if(!selectedCourse)return [];
+ const courseQuestions=all.filter(question=>question.course===selectedCourse);
+ if(selectedCourse===ITKD_GOVERNANCE_COURSE)return courseQuestions;
  const selectedRanks=selectedValues("rank"),selectedTopics=selectedValues("topic");
- return all.filter(question=>
+ return courseQuestions.filter(question=>
   (!selectedRanks.length||selectedRanks.includes(question.rank||NO_RANK_LABEL))&&
   (!selectedTopics.length||selectedTopics.includes(question.cat))
  );
 }
 
 function updateSetup() {
+ selectedCourse=document.querySelector('input[name="course"]:checked')?.value||null;
+ const hasCourse=selectedCourse!==null;
+ const isSyllabus=selectedCourse===COLOURED_BELT_COURSE;
+ $("quizOptions").hidden=!hasCourse;
+ $("syllabusFilters").hidden=!isSyllabus;
+ if(!hasCourse) {
+  $("start").disabled=true;
+  return;
+ }
  const count=filtered().length,selectedRanks=selectedValues("rank"),selectedTopics=selectedValues("topic");
  updateFilterSummary("rank","rankSummary","All belt ranks","ranks");
  updateFilterSummary("topic","topicSummary","All topics","topics");
  const topicLabel=selectedTopics.length?selectedTopics.join(", "):"All topics";
  const rankLabel=selectedRanks.length?selectedRanks.join(", "):"All belt ranks";
- const scope=[topicLabel,rankLabel].join(" · ");
+ const scope=isSyllabus?[selectedCourse,topicLabel,rankLabel].join(" · "):selectedCourse;
  $("scope").innerHTML=`<strong>${escapeHtml(scope)}</strong> · ${count} question${count===1?"":"s"} available`;
+ $("setupHint").textContent=isSyllabus
+  ?"Choose one or more belt ranks and topics, or leave them unfiltered. Answers are revealed after you submit. Progress is saved in this browser and synced when you sign in."
+  :"Choose how many governance questions to practise. Answers are revealed after you submit. Progress is saved in this browser and synced when you sign in.";
  $("start").disabled=count===0;
 }
 
+document.querySelectorAll('input[name="course"]').forEach(option=>option.addEventListener("change",updateSetup));
 $("clearRanks").addEventListener("click",()=>{
  document.querySelectorAll('input[name="rank"]:checked').forEach(option=>{option.checked=false});
  updateSetup();

@@ -48,7 +48,16 @@
 </details>
 <section class="card" id="setup">
 <h2>Set up your quiz</h2>
+<fieldset class="course-picker">
+<legend>Choose what you're studying</legend>
+<div class="course-options">
+<label class="course-option"><input type="radio" name="course" value="Coloured Belt Techniques Syllabus"><span><strong>Coloured Belt Techniques Syllabus</strong><small>Practise belt ranks and syllabus topics.</small></span></label>
+<label class="course-option"><input type="radio" name="course" value="ITKD Governance"><span><strong>ITKD Governance</strong><small>Practise governance and personnel questions.</small></span></label>
+</div>
+</fieldset>
+<div id="quizOptions" hidden>
 <div class="controls">
+<div id="syllabusFilters" class="controls">
 <div class="field">
 <span class="field-label">Belt ranks</span>
 <details class="multi-select">
@@ -65,11 +74,13 @@
 <button type="button" class="text-button" id="clearTopics">Clear selection (all topics)</button>
 </details>
 </div>
+</div>
 <div class="field"><label for="count">Question count</label><select id="count"><option value="20">20 questions</option><option value="40">40 questions</option><option value="60">60 questions</option><option value="all">All available questions</option></select></div>
 </div>
 <p id="scope"></p>
-<p class="muted">Choose one or more belt ranks and topics. Leave a filter empty to include all. Answers are revealed after you submit. Progress is saved in this browser and synced when you sign in.</p>
+<p id="setupHint" class="muted"></p>
 <div class="actions"><button id="start">Start quiz</button></div>
+</div>
 </section>
 <section class="card" id="quiz">
 <div class="qtop"><span id="qcounter">Question 1</span><span id="qmeta"></span></div>
