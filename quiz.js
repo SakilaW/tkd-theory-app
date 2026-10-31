@@ -16,7 +16,7 @@ function addFilterOptions(containerId,values,name) {
  }
 }
 
-addFilterOptions("rankOptions",ranks,"rank");
+addFilterOptions("rankOptions",rankOptions,"rank");
 addFilterOptions("topicOptions",topics,"topic");
 
 function selectedValues(name) {
@@ -56,7 +56,7 @@ function buildOptions(question) {
 function filtered() {
  const selectedRanks=selectedValues("rank"),selectedTopics=selectedValues("topic");
  return all.filter(question=>
-  (!selectedRanks.length||selectedRanks.includes(question.rank))&&
+  (!selectedRanks.length||selectedRanks.includes(question.rank||NO_RANK_LABEL))&&
   (!selectedTopics.length||selectedTopics.includes(question.cat))
  );
 }
@@ -98,7 +98,7 @@ function start(list=null) {
 function render() {
  const question=quiz[index];
  $("qcounter").textContent=`Question ${index+1} of ${quiz.length}`;
- $("qmeta").textContent=`${question.cat} · ${question.rank}`;
+ $("qmeta").textContent=`${question.cat} · ${question.rank||NO_RANK_LABEL}`;
  $("bar").style.width=(index+1)/quiz.length*100+"%";
  $("questionText").textContent=question.q;
  $("questionMedia").innerHTML=question.image?`<img class="pattern-diagram" src="${escapeHtml(question.image)}" alt="Pattern diagram for visual identification question">`:"";
@@ -120,7 +120,8 @@ function renderBreakdown() {
  const group=(key,order)=>{
   const groups={};
   quiz.forEach((question,i)=>{
-   const summary=groups[question[key]]||(groups[question[key]]={a:0,c:0,seen:0,total:0});
+   const value=key==="rank"?(question.rank||NO_RANK_LABEL):question[key];
+   const summary=groups[value]||(groups[value]={a:0,c:0,seen:0,total:0});
    summary.a++;
    summary.seen++;
    summary.total++;
@@ -134,7 +135,7 @@ function renderBreakdown() {
    return `<div class="prow">${header}</div>`;
   }).join("");
  };
- $("resBreak").innerHTML=`<div class="muted">By rank</div>${group("rank",ranks)}<div class="muted" style="margin-top:10px">By topic</div>${group("cat")}`;
+ $("resBreak").innerHTML=`<div class="muted">By rank</div>${group("rank",rankOptions)}<div class="muted" style="margin-top:10px">By topic</div>${group("cat")}`;
 }
 
 async function submitQuiz() {
@@ -166,7 +167,7 @@ async function submitQuiz() {
   const isCorrect=answers[i]===question.a;
   const review=document.createElement("div");
   review.className="review";
-  review.innerHTML=`<span class="tag">${escapeHtml(question.cat)}</span><span class="tag">${escapeHtml(question.rank)}</span><p><strong>${i+1}. ${escapeHtml(question.q)}</strong></p>${question.image?`<img class="pattern-diagram" src="${escapeHtml(question.image)}" alt="Pattern diagram shown in question">`:""}<p class="${isCorrect?"correct":"incorrect"}">${isCorrect?"Correct":"Your answer: "+escapeHtml(answers[i]??"Not answered")}</p><p><strong>Correct answer:</strong> ${escapeHtml(question.a)}</p><p class="muted">${escapeHtml(question.why||"")}</p>`;
+  review.innerHTML=`<span class="tag">${escapeHtml(question.cat)}</span><span class="tag">${escapeHtml(question.rank||NO_RANK_LABEL)}</span><p><strong>${i+1}. ${escapeHtml(question.q)}</strong></p>${question.image?`<img class="pattern-diagram" src="${escapeHtml(question.image)}" alt="Pattern diagram shown in question">`:""}<p class="${isCorrect?"correct":"incorrect"}">${isCorrect?"Correct":"Your answer: "+escapeHtml(answers[i]??"Not answered")}</p><p><strong>Correct answer:</strong> ${escapeHtml(question.a)}</p><p class="muted">${escapeHtml(question.why||"")}</p>`;
   $("reviewList").appendChild(review);
  });
  $("retryWrong").disabled=correct===quiz.length;

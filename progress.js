@@ -23,19 +23,19 @@ function row(name,summary,inner) {
 
 function renderProgress() {
  const questions=loadQ(),focusCandidates=[];
- $("progRank").innerHTML=ranks.map(rank=>{
-  const rankQuestions=all.filter(question=>question.rank===rank);
+ $("progRank").innerHTML=rankOptions.map(rank=>{
+  const rankQuestions=all.filter(question=>(question.rank||NO_RANK_LABEL)===rank);
   if(!rankQuestions.length)return "";
   const inner=[...new Set(rankQuestions.map(question=>question.cat))].sort().map(topic=>row(topic,agg(rankQuestions.filter(question=>question.cat===topic),questions))).join("");
   return row(rank,agg(rankQuestions,questions),inner);
  }).join("");
  $("progTopic").innerHTML=topics.map(topic=>{
   const topicQuestions=all.filter(question=>question.cat===topic);
-  const inner=ranks.filter(rank=>topicQuestions.some(question=>question.rank===rank)).map(rank=>row(rank,agg(topicQuestions.filter(question=>question.rank===rank),questions))).join("");
+  const inner=rankOptions.filter(rank=>topicQuestions.some(question=>(question.rank||NO_RANK_LABEL)===rank)).map(rank=>row(rank,agg(topicQuestions.filter(question=>(question.rank||NO_RANK_LABEL)===rank),questions))).join("");
   return row(topic,agg(topicQuestions,questions),inner);
  }).join("");
- for(const topic of topics)for(const rank of ranks) {
-  const matching=all.filter(question=>question.cat===topic&&question.rank===rank);
+ for(const topic of topics)for(const rank of rankOptions) {
+  const matching=all.filter(question=>question.cat===topic&&(question.rank||NO_RANK_LABEL)===rank);
   if(matching.length)focusCandidates.push({topic,rank,summary:agg(matching,questions)});
  }
  const weak=focusCandidates.filter(item=>item.summary.a>=3&&item.summary.pct<70).sort((a,b)=>a.summary.pct-b.summary.pct).slice(0,3);
