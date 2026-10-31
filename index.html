@@ -106,7 +106,14 @@
 </div>
 <section class="result-panel" id="rankResults" aria-label="Performance by rank"><div id="resRank"></div></section>
 <section class="result-panel" id="topicResults" aria-label="Performance by topic" hidden><div id="resTopic"></div></section>
-<section class="result-panel" id="reviewResults" aria-label="Review answers" hidden><div id="reviewList"></div></section>
+<section class="result-panel" id="reviewResults" aria-label="Review answers" hidden>
+<div class="review-filters" role="group" aria-label="Filter reviewed questions">
+<button type="button" class="review-filter active" id="reviewAll" aria-pressed="true">All questions</button>
+<button type="button" class="review-filter" id="reviewIncorrect" aria-pressed="false">Incorrect only</button>
+</div>
+<p class="muted" id="reviewCount" aria-live="polite"></p>
+<div id="reviewList"></div>
+</section>
 </section>
 </main>
 <script src="data.js"></script>

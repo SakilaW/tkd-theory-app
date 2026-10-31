@@ -30,7 +30,7 @@ function updateFilterSummary(name,summaryId,allLabel,selectedLabel) {
  $(summaryId).textContent=selected.length?`${selected.length} ${selectedLabel} selected`:allLabel;
 }
 
-let quiz=[],answers=[],index=0;
+let quiz=[],answers=[],index=0,reviewIncorrectOnly=false;
 
 function shuffle(items) {
  for(let i=items.length-1;i>0;i--) {
@@ -185,6 +185,32 @@ function showResultView(view) {
  }
 }
 
+function renderReview() {
+ const reviews=quiz.map((question,index)=>({question,index,isCorrect:answers[index]===question.a}))
+  .filter(review=>!reviewIncorrectOnly||!review.isCorrect);
+ $("reviewCount").textContent=reviewIncorrectOnly
+  ?`Showing ${reviews.length} incorrect or unanswered question${reviews.length===1?"":"s"}`
+  :`Showing all ${reviews.length} questions`;
+ $("reviewList").innerHTML=reviews.map(({question,index,isCorrect})=>{
+  const selectedAnswer=answers[index];
+  const options=question.options.map((option,optionIndex)=>{
+   const isCorrectOption=option===question.a;
+   const isSelected=option===selectedAnswer;
+   const resultClass=isCorrectOption?"review-option-correct":isSelected?"review-option-incorrect":"";
+   const status=isSelected?(isCorrect?"Your answer · Correct":"Your answer"):isCorrectOption?"Correct answer":"";
+   return `<button type="button" class="option review-option ${resultClass}" disabled><span class="letter">${String.fromCharCode(65+optionIndex)}</span>${escapeHtml(option)}${status?`<span class="review-option-status">${escapeHtml(status)}</span>`:""}</button>`;
+  }).join("");
+  return `<article class="review">
+   <span class="tag">${escapeHtml(question.cat)}</span><span class="tag">${escapeHtml(question.rank||NO_RANK_LABEL)}</span>
+   <p><strong>${index+1}. ${escapeHtml(question.q)}</strong></p>
+   ${question.image?`<img class="pattern-diagram" src="${escapeHtml(question.image)}" alt="Pattern diagram shown in question">`:""}
+   <div class="review-options">${options}</div>
+   ${selectedAnswer===null?'<p class="muted">Not answered</p>':""}
+   ${question.why?`<p class="muted">${escapeHtml(question.why)}</p>`:""}
+  </article>`;
+ }).join("");
+}
+
 async function submitQuiz() {
  const correct=quiz.reduce((total,question,i)=>total+(answers[i]===question.a?1:0),0);
  const percent=Math.round(correct/quiz.length*100);
@@ -209,14 +235,7 @@ async function submitQuiz() {
  $("rightCount").textContent=`${correct}/${quiz.length}`;
  $("wrongCount").textContent=quiz.length-correct;
  $("resultMessage").textContent=percent>=90?"Excellent work — keep the recall sharp.":percent>=70?"Good progress. Review the missed answers and try again.":"Good practice. Focus on the missed terminology and theory, then retest.";
- $("reviewList").innerHTML="";
- quiz.forEach((question,i)=>{
-  const isCorrect=answers[i]===question.a;
-  const review=document.createElement("div");
-  review.className="review";
-  review.innerHTML=`<span class="tag">${escapeHtml(question.cat)}</span><span class="tag">${escapeHtml(question.rank||NO_RANK_LABEL)}</span><p><strong>${i+1}. ${escapeHtml(question.q)}</strong></p>${question.image?`<img class="pattern-diagram" src="${escapeHtml(question.image)}" alt="Pattern diagram shown in question">`:""}<p class="${isCorrect?"correct":"incorrect"}">${isCorrect?"Correct":"Your answer: "+escapeHtml(answers[i]??"Not answered")}</p><p><strong>Correct answer:</strong> ${escapeHtml(question.a)}</p><p class="muted">${escapeHtml(question.why||"")}</p>`;
-  $("reviewList").appendChild(review);
- });
+ renderReview();
  $("retryWrong").disabled=correct===quiz.length;
  window.scrollTo(0,0);
 }
@@ -227,6 +246,22 @@ $("submit").onclick=submitQuiz;
 $("showRank").onclick=()=>showResultView("rank");
 $("showTopic").onclick=()=>showResultView("topic");
 $("showReview").onclick=()=>showResultView("review");
+$("reviewAll").onclick=()=>{
+ reviewIncorrectOnly=false;
+ $("reviewAll").classList.add("active");
+ $("reviewAll").setAttribute("aria-pressed","true");
+ $("reviewIncorrect").classList.remove("active");
+ $("reviewIncorrect").setAttribute("aria-pressed","false");
+ renderReview();
+};
+$("reviewIncorrect").onclick=()=>{
+ reviewIncorrectOnly=true;
+ $("reviewIncorrect").classList.add("active");
+ $("reviewIncorrect").setAttribute("aria-pressed","true");
+ $("reviewAll").classList.remove("active");
+ $("reviewAll").setAttribute("aria-pressed","false");
+ renderReview();
+};
 $("start").onclick=()=>start();
 $("newQuiz").onclick=()=>{
  $("results").style.display="none";
