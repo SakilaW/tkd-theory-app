@@ -2,19 +2,14 @@
 
 A static Taekwon-Do theory study app. Open `index.html` to set up and take a quiz, `progress.html` to review saved progress, or `question-bank.html` to search the question bank.
 
-The pages share question data in `data.js`, common styling in `styles.css`, and browser storage helpers in `shared.js`. Progress is always saved in this browser; optionally connect a Supabase project and sign in to sync it between devices.
+The pages share question data in `data.js`, common styling in `styles.css`, and browser storage helpers in `shared.js`. Progress is always saved in this browser; sign in to sync it between devices.
 
 ## Sync progress with Supabase
 
-Supabase's free plan includes authentication and a Postgres database. The app connects directly from the browser using Supabase's public publishable key (or legacy anon key); row-level security ensures each signed-in user can access only their own progress.
+The app is already connected to its Supabase project. Users only need to open **Sync progress across devices**, enter an email and password, and choose **Create account** or **Sign in**. If email confirmation is enabled, confirm the account using the email Supabase sends. Configure the app's local and deployed URLs in Supabase Auth URL settings so confirmation links return to the app.
 
-1. Create a free project at [supabase.com](https://supabase.com/).
-2. In the Supabase SQL Editor, run the contents of [`supabase-setup.sql`](./supabase-setup.sql) to create the progress table and its access policy.
-3. In the project's API settings, copy the **Project URL** and **publishable key** (or legacy **anon key**). Never use or share a `service_role` key in this app.
-4. Open any app page, expand **Save progress across devices**, and enter the URL and key. The public connection settings are saved in that browser.
-5. Create an account with an email and password, then sign in. If email confirmation is enabled, confirm the account using the email Supabase sends.
-6. To sign in on another device, open the app there, enter the same project URL and key, and sign in with that account.
+For a new deployment or a fork using a different Supabase project, update the project URL and public publishable key in `SUPABASE_CONFIG` in [`auth.js`](./auth.js). Run [`supabase-setup.sql`](./supabase-setup.sql) in that project's SQL Editor to create the progress table and its row-level security policy. Use only a publishable key (or legacy anon key) in browser code; never use a `service_role` key. The project owner must also add the app's local and deployed URLs to the Supabase Auth URL settings.
 
 On a browser without an account-linked progress record, its existing local progress is combined with the account's cloud progress. If you practise while signed out, those new attempts are merged the next time you sign back in to the same account. Progress already linked to a different account is not transferred. Completed quizzes and the latest 10 quiz reviews sync to the signed-in account; when signed out, progress continues to save locally.
 
-For email confirmation, configure the Supabase Auth URL settings to include the app's local and deployed URLs. Supabase Free projects may pause after a week of inactivity; resume the project from the Supabase dashboard if sign-in or sync stops responding.
+Supabase Free projects may pause after a week of inactivity; resume the project from the Supabase dashboard if sign-in or sync stops responding.
