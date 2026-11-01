@@ -1,4 +1,4 @@
-for(const rank of ranks) {
+for(const rank of rankOptions) {
  const option=document.createElement("option");
  option.value=rank;
  option.textContent=rank;
@@ -15,7 +15,7 @@ function renderBank() {
  const search=$("search").value.trim().toLocaleLowerCase();
  const rank=$("rankFilter").value,topic=$("topicFilter").value;
  const matches=all.filter(question=>{
-  if(rank&&question.rank!==rank)return false;
+  if(rank&&(question.rank||NO_RANK_LABEL)!==rank)return false;
   if(topic&&question.cat!==topic)return false;
   const content=[question.q,question.a,question.why,question.cat,question.rank,...(question.wrong||[])].join(" ").toLocaleLowerCase();
   return !search||content.includes(search);
@@ -26,7 +26,7 @@ function renderBank() {
   return;
  }
  $("questionList").innerHTML=matches.map(question=>`<article class="bank-item">
-  <span class="tag">${escapeHtml(question.cat)}</span><span class="tag">${escapeHtml(question.rank)}</span>
+  <span class="tag">${escapeHtml(question.cat)}</span><span class="tag">${escapeHtml(question.rank||NO_RANK_LABEL)}</span>
   <h3>${escapeHtml(question.q)}</h3>
   ${question.image?`<img class="pattern-diagram" src="${escapeHtml(question.image)}" alt="Pattern diagram for ${escapeHtml(question.pattern||question.a)}">`:""}
   <p><strong>Answer:</strong> ${escapeHtml(question.a)}</p>

@@ -14,16 +14,54 @@ FACTS.push(
   {cat:"Patterns",rank:"Red stripe",q:"According to the handbook, what does the Toi-Gye pattern diagram represent?",a:"Scholar",wrong:["Heaven","Earth","A warrior"],why:"The handbook states that Toi-Gye’s diagram represents a scholar."}
 );
 const ranks = ["White belt","Yellow stripe","Yellow belt","Green stripe","Green belt","Blue stripe","Blue belt","Red stripe","Red belt","Black stripe"];
+const NO_RANK_LABEL = "No belt rank";
+const rankOptions = [...ranks,NO_RANK_LABEL];
+const COLOURED_BELT_COURSE = "Coloured Belt Techniques Syllabus";
+const ITKD_GOVERNANCE_COURSE = "ITKD Governance";
+const PERSONNEL_FACTS = [
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD President?",a:"Master Gray Patterson",wrong:["Master Kane Raukura","Grand Master Paul McPhail","Master Kevin Joe"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who are the elected ITKD Board members?",a:"Master Kane Raukura; Mr Nick Lourantos; Master Kevin Joe; Mr Bjarne Morris",wrong:["Mrs Fiona Parrant; Ms Karen Long; Mr Mitchell Alexander","Grand Master Evan Davidson; Grand Master Paul McPhail; Mr Brendan Doogan","Mr Matt and Mrs Lisa Davey; Mrs Natasha Iotua; Mrs Karen Atrill"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who are the appointed ITKD Board members?",a:"Mrs Fiona Parrant (Board Chair); Ms Karen Long (Deputy Board Chair); Mr Mitchell Alexander",wrong:["Master Kane Raukura; Mr Nick Lourantos; Master Kevin Joe; Mr Bjarne Morris","Grand Master Evan Davidson; Grand Master Paul McPhail; Mr Brendan Doogan","Ms Karyne Ross; Mr Shaun Tolley; Mrs Shirley Pygott"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Board Chair?",a:"Mrs Fiona Parrant",wrong:["Ms Karen Long","Mr Mitchell Alexander","Master Gray Patterson"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Deputy Board Chair?",a:"Ms Karen Long",wrong:["Mrs Fiona Parrant","Mrs Shirley Pygott","Mrs Karen Atrill"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who serves on the ITKD Technical Committee?",a:"GM James Rimmer; GM Mahesh Bhana; Master Gray Patterson; Dr Brice Valles; Mr Brendan Doogan",wrong:["Master Kane Raukura; Mr Nick Lourantos; Master Kevin Joe; Mr Bjarne Morris","Grand Master Evan Davidson; Grand Master Paul McPhail; Mr Brendan Doogan","Ms Karyne Ross; Mr Shaun Tolley; Mrs Shirley Pygott; Mr Morgan Lloyd"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD General Manager?",a:"Ms Karyne Ross",wrong:["Mr Shaun Tolley","Mrs Shirley Pygott","Mr Morgan Lloyd"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Operations Executive?",a:"Mr Shaun Tolley",wrong:["Ms Karyne Ross","Mr Morgan Lloyd","Grand Master Paul McPhail"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Database Manager?",a:"Mrs Shirley Pygott",wrong:["Ms Karyne Ross","Mrs Debbie Hart","Mrs Anika Koziarski"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Accountant?",a:"Mr Morgan Lloyd",wrong:["Mr Shaun Tolley","Mr Alan Miller","Mr Mitchell Alexander"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Webmaster?",a:"Grand Master Paul McPhail",wrong:["Mr Brendan Doogan","Grand Master Evan Davidson","Master Gray Patterson"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Kubz Co-ordinator?",a:"Mrs Debbie Hart",wrong:["Mrs Shirley Pygott","Mrs Natasha Iotua","Ms Karen Long"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Child Protection Officer?",a:"Master Kane Raukura",wrong:["Master Kevin Joe","Master Gray Patterson","Mr Nick Lourantos"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who provides ITKD JustGo Support?",a:"Mr Shaun Tolley",wrong:["Mr Morgan Lloyd","Mr Nick Lourantos","Mr Brendan Doogan"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who are the ITKD Auckland North Regional Directors?",a:"Mr Matt and Mrs Lisa Davey",wrong:["Mrs Natasha Iotua","Mrs Karen Atrill","Mr Alan Miller"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the ITKD Counties Manukau Regional Director?",a:"Mrs Natasha Iotua",wrong:["Mrs Anika Koziarski","Mrs Karen Atrill","Mrs Lisa Davey"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the Midlands Regional Director?",a:"Mrs Karen Atrill",wrong:["Mrs Natasha Iotua","Mrs Anika Koziarski","Mrs Debbie Hart"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the Central Regional Director?",a:"Mr Alan Miller",wrong:["Mr Morgan Lloyd","Mr Matt Davey","Mr Shaun Tolley"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the Wellington Regional Director?",a:"Mrs Anika Koziarski",wrong:["Mrs Karen Atrill","Mrs Natasha Iotua","Mrs Lisa Davey"]},
+ {cat:"ITKD Personnel",rank:null,q:"What is the current South Island Regional Director listing?",a:"Vacant",wrong:["Mr Alan Miller","Mrs Anika Koziarski","Mrs Karen Atrill"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is listed on the Audit & Risk Committee?",a:"Ms Karen Long (Clair); Grand Master Evan Davidson (Chair)",wrong:["Mrs Fiona Parrant (Chair); Ms Karen Long (Deputy Chair)","Mr Nick Lourantos (Chair)","Grand Master Paul McPhail; Mr Brendan Doogan"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who chairs the Audit & Risk Committee?",a:"Grand Master Evan Davidson",wrong:["Ms Karen Long","Mrs Fiona Parrant","Mr Nick Lourantos"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who chairs the Information Technology Committee?",a:"Mr Nick Lourantos",wrong:["Grand Master Paul McPhail","Mr Brendan Doogan","Mr Shaun Tolley"]},
+ {cat:"ITKD Personnel",rank:null,q:"Which ITF Standing Committee does Grand Master Evan Davidson serve on?",a:"Grand Masters Promotion Committee",wrong:["Technical and Instruction Committee","Coaches' Committee","Information Technology Committee"]},
+ {cat:"ITKD Personnel",rank:null,q:"Which ITF Standing Committee does Grand Master Paul McPhail serve on?",a:"Technical and Instruction Committee",wrong:["Grand Masters Promotion Committee","Coaches' Committee","Audit & Risk Committee"]},
+ {cat:"ITKD Personnel",rank:null,q:"Which ITF Standing Committee does Mr Brendan Doogan serve on?",a:"Coaches' Committee",wrong:["Grand Masters Promotion Committee","Technical and Instruction Committee","Information Technology Committee"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the Midlands Instructor Development Officer?",a:"Grand Master James Rimmer",wrong:["Master Mahesh Bhana","Master Gray Patterson","Grand Master Paul McPhail"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the Auckland North and Counties Manukau Instructor Development Officer?",a:"Master Mahesh Bhana",wrong:["Grand Master James Rimmer","Master Gray Patterson","Master Kane Raukura"]},
+ {cat:"ITKD Personnel",rank:null,q:"Who is the Wellington and South Island Instructor Development Officer?",a:"Master Gray Patterson",wrong:["Master Mahesh Bhana","Grand Master James Rimmer","Master Kevin Joe"]}
+];
 const all = [];
 const seen = new Set();
 for (const t of TERMS) {
   for (const q of [
-    {cat:t.cat,rank:t.rank,q:`What is the Korean term for “${t.en}”?`,a:t.ko,type:"term",en:t.en,ko:t.ko,why:`${t.en} = ${t.ko} (as listed in the syllabus).`},
-    {cat:t.cat,rank:t.rank,q:`What does “${t.ko}” mean in English?`,a:t.en,type:"term",en:t.en,ko:t.ko,why:`${t.ko} = ${t.en} (as listed in the syllabus).`}
+    {cat:t.cat,rank:t.rank,q:`What is the Korean term for “${t.en}”?`,a:t.ko,type:"term",en:t.en,ko:t.ko,why:`${t.en} = ${t.ko} (as listed in the syllabus).`,course:COLOURED_BELT_COURSE},
+    {cat:t.cat,rank:t.rank,q:`What does “${t.ko}” mean in English?`,a:t.en,type:"term",en:t.en,ko:t.ko,why:`${t.ko} = ${t.en} (as listed in the syllabus).`,course:COLOURED_BELT_COURSE}
   ]) { if(!seen.has(q.q.toLowerCase())) {seen.add(q.q.toLowerCase());all.push(q)} }
 }
-for(const f of FACTS){
- const key=f.type==="diagram"?`${f.q}::${f.rank}`.toLowerCase():f.q.toLowerCase();
- if(!seen.has(key)){seen.add(key);all.push({...f,type:f.type||"fact"})}
+for(const [facts,course] of [[FACTS,COLOURED_BELT_COURSE],[PERSONNEL_FACTS,ITKD_GOVERNANCE_COURSE]]){
+ for(const f of facts){
+  const key=f.type==="diagram"?`${f.q}::${f.rank}`.toLowerCase():f.q.toLowerCase();
+  if(!seen.has(key)){seen.add(key);all.push({...f,type:f.type||"fact",course})}
+ }
 }
 const topics = [...new Set(all.map(q=>q.cat))].sort();
+const syllabusTopics = [...new Set(all.filter(q=>q.course===COLOURED_BELT_COURSE).map(q=>q.cat))].sort();

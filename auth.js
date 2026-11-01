@@ -1,4 +1,7 @@
-const SUPABASE_CONFIG_KEY="tkdSupabaseConfig";
+const SUPABASE_CONFIG={
+ url:"https://rsascyobfovfwwhicyyi.supabase.co",
+ key:"sb_publishable_LtxPtCl2MN2QTMw1lRSp-Q_z6s3JeCb"
+};
 const PROGRESS_OWNER_KEY="tkdProgressOwner";
 const PROGRESS_SNAPSHOT_KEY="tkdCloudSnapshot";
 let supabaseClient=null;
@@ -17,12 +20,8 @@ function setSyncMessage(message,state="local") {
 }
 
 function setAccountUi(user) {
- const configured=$("syncConfigured");
- const unconfigured=$("syncNotConfigured");
  const signedOut=$("signedOut");
  const signedIn=$("signedIn");
- if(configured)configured.hidden=!supabaseClient;
- if(unconfigured)unconfigured.hidden=Boolean(supabaseClient);
  if(signedOut)signedOut.hidden=Boolean(user);
  if(signedIn)signedIn.hidden=!user;
  if(user) {
@@ -31,18 +30,7 @@ function setAccountUi(user) {
  } else if(supabaseClient) {
   setSyncMessage("Sign in to sync progress. You can still practise and save on this device.","local");
  } else {
-  setSyncMessage("Progress is saved on this device until you connect an account.","local");
- }
-}
-
-function readSupabaseConfig() {
- try {
-  const config=JSON.parse(localStorage.getItem(SUPABASE_CONFIG_KEY)||"null");
-  return config&&typeof config.url==="string"&&typeof config.key==="string"?config:null;
- } catch(error) {
-  console.error("Could not read the saved Supabase connection settings.",error);
-  setSyncMessage("Could not read saved connection settings. Re-enter your Supabase project URL and key.","error");
-  return null;
+  setSyncMessage("Account sign-in is unavailable right now. Progress is still saved on this device.","error");
  }
 }
 
@@ -67,11 +55,23 @@ function mergeLocalProgress(quizSummary,questionStats,baseline=null) {
   };
  }
  const newQuizzes=Math.max(0,(localSummary.quizzes||0)-(baseline?.quizSummary?.quizzes||0));
+ const baselineHistoryIds=new Set((baseline?.quizSummary?.history||[]).map(attempt=>attempt.id));
+ const localHistory=localSummary.history||[];
+ const unsyncedHistory=localHistory.filter(attempt=>!baselineHistoryIds.has(attempt.id));
+ const historyById=new Map();
+ for(const attempt of [...(quizSummary.history||[]),...unsyncedHistory]) {
+  const key=attempt.id||`${attempt.completedAt}:${attempt.course}:${attempt.total}`;
+  if(!historyById.has(key))historyById.set(key,attempt);
+ }
+ const history=[...historyById.values()]
+  .sort((left,right)=>Date.parse(right.completedAt)-Date.parse(left.completedAt))
+  .slice(0,window.QUIZ_HISTORY_LIMIT);
  return {
   summary:{
    quizzes:(quizSummary.quizzes||0)+newQuizzes,
    best:newQuizzes?Math.max(quizSummary.best||0,localSummary.best||0):quizSummary.best||0,
-   last:newQuizzes?localSummary.last:quizSummary.last
+   last:newQuizzes?localSummary.last:quizSummary.last,
+   history
   },
   questions:mergedQuestions
  };
@@ -109,7 +109,7 @@ async function syncAccountProgress(user) {
   if(!previousOwner||baseline) {
    const localSummary=loadProgress(),localQuestions=loadQ();
    const hasUnsyncedProgress=baseline
-    ?localSummary.quizzes>(baseline.quizSummary?.quizzes||0)||Object.entries(localQuestions).some(([key,result])=>{
+    ?localSummary.quizzes>(baseline.quizSummary?.quizzes||0)||(localSummary.history||[]).some(attempt=>!(baseline.quizSummary?.history||[]).some(previous=>previous.id===attempt.id))||Object.entries(localQuestions).some(([key,result])=>{
       const previous=baseline.questionStats?.[key]||{a:0,c:0};
       return result.a>(previous.a||0)||result.c>(previous.c||0);
      })
@@ -161,7 +161,7 @@ async function handleAuthSession(session) {
  }
 }
 
-function configureSupabase(config) {
+function configureSupabase() {
  if(authSubscription) {
   authSubscription.unsubscribe();
   authSubscription=null;
@@ -169,24 +169,19 @@ function configureSupabase(config) {
  supabaseClient=null;
  currentUser=null;
  initializedUserId=null;
- if(!config) {
-  setAccountUi(null);
-  return;
- }
  if(!window.supabase?.createClient) {
   setSyncMessage("The Supabase client library did not load. Check your connection and reload this page.","error");
   return;
  }
  try {
-  const projectUrl=new URL(config.url);
+  const projectUrl=new URL(SUPABASE_CONFIG.url);
   if(projectUrl.protocol!=="https:")throw new Error("The project URL must start with https://.");
-  if(!config.key.trim())throw new Error("The publishable key cannot be empty.");
-  supabaseClient=window.supabase.createClient(projectUrl.origin,config.key.trim());
+  if(!SUPABASE_CONFIG.key.trim())throw new Error("The publishable key cannot be empty.");
+  supabaseClient=window.supabase.createClient(projectUrl.origin,SUPABASE_CONFIG.key.trim());
   const {data}=supabaseClient.auth.onAuthStateChange((_event,session)=>{
    setTimeout(()=>handleAuthSession(session),0);
   });
   authSubscription=data.subscription;
-  $("configuredProject").textContent=projectUrl.host;
   setAccountUi(null);
  } catch(error) {
   supabaseClient=null;
@@ -195,39 +190,16 @@ function configureSupabase(config) {
  }
 }
 
-$("syncConfigForm").addEventListener("submit",event=>{
- event.preventDefault();
- const url=$("supabaseUrl").value.trim().replace(/\/+$/,"");
- const key=$("supabaseKey").value.trim();
- try {
-  const parsedUrl=new URL(url);
-  if(parsedUrl.protocol!=="https:")throw new Error("The project URL must start with https://.");
-  if(!key)throw new Error("Paste your Supabase publishable key.");
-  localStorage.setItem(SUPABASE_CONFIG_KEY,JSON.stringify({url:parsedUrl.origin,key}));
-  configureSupabase({url:parsedUrl.origin,key});
-  if(supabaseClient)$("syncNotConfigured").hidden=true;
- } catch(error) {
-  setSyncMessage(error.message,"error");
- }
-});
-
-$("changeSupabase").onclick=()=>{
- if(currentUser) {
-  setSyncMessage("Sign out before changing the connected Supabase project.","error");
-  return;
- }
- if(supabaseClient)supabaseClient.auth.signOut().catch(error=>console.error("Could not sign out.",error));
- localStorage.removeItem(SUPABASE_CONFIG_KEY);
- configureSupabase(null);
- $("supabaseKey").value="";
- $("syncNotConfigured").hidden=false;
-};
-
 $("signIn").onclick=async()=>{
+ if(!$("accountForm").reportValidity())return;
  const email=$("accountEmailInput").value.trim();
  const credential=document.getElementById("credentialInput").value;
  if(!email||!credential) {
   setSyncMessage("Enter your email and password first.","error");
+  return;
+ }
+ if(!supabaseClient) {
+  setSyncMessage("Account sign-in is unavailable. Check your connection and reload this page.","error");
   return;
  }
  $("signIn").disabled=true;
@@ -244,10 +216,15 @@ $("signIn").onclick=async()=>{
 };
 
 $("signUp").onclick=async()=>{
+ if(!$("accountForm").reportValidity())return;
  const email=$("accountEmailInput").value.trim();
  const credential=document.getElementById("credentialInput").value;
  if(!email||!credential) {
   setSyncMessage("Enter your email and password first.","error");
+  return;
+ }
+ if(!supabaseClient) {
+  setSyncMessage("Account sign-up is unavailable. Check your connection and reload this page.","error");
   return;
  }
  $("signIn").disabled=true;
@@ -298,4 +275,4 @@ window.saveProgressToCloud=async()=>{
  }
 };
 
-configureSupabase(readSupabaseConfig());
+configureSupabase();

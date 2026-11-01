@@ -17,18 +17,20 @@ function addFilterOptions(containerId,values,name) {
 }
 
 addFilterOptions("rankOptions",ranks,"rank");
-addFilterOptions("topicOptions",topics,"topic");
+addFilterOptions("topicOptions",syllabusTopics,"topic");
 
 function selectedValues(name) {
  return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(option=>option.value);
 }
+
+let selectedCourse=null;
 
 function updateFilterSummary(name,summaryId,allLabel,selectedLabel) {
  const selected=selectedValues(name);
  $(summaryId).textContent=selected.length?`${selected.length} ${selectedLabel} selected`:allLabel;
 }
 
-let quiz=[],answers=[],index=0;
+let quiz=[],answers=[],index=0,reviewIncorrectOnly=false,submittingQuiz=false;
 
 function shuffle(items) {
  for(let i=items.length-1;i>0;i--) {
@@ -54,24 +56,94 @@ function buildOptions(question) {
 }
 
 function filtered() {
+ if(!selectedCourse)return [];
+ const courseQuestions=all.filter(question=>question.course===selectedCourse);
+ if(selectedCourse===ITKD_GOVERNANCE_COURSE)return courseQuestions;
  const selectedRanks=selectedValues("rank"),selectedTopics=selectedValues("topic");
- return all.filter(question=>
-  (!selectedRanks.length||selectedRanks.includes(question.rank))&&
+ return courseQuestions.filter(question=>
+  (!selectedRanks.length||selectedRanks.includes(question.rank||NO_RANK_LABEL))&&
   (!selectedTopics.length||selectedTopics.includes(question.cat))
  );
 }
 
 function updateSetup() {
+ selectedCourse=document.querySelector('input[name="course"]:checked')?.value||null;
+ const hasCourse=selectedCourse!==null;
+ const isSyllabus=selectedCourse===COLOURED_BELT_COURSE;
+ $("quizOptions").hidden=!hasCourse;
+ $("syllabusFilters").hidden=!isSyllabus;
+ if(!hasCourse) {
+  $("start").disabled=true;
+  return;
+ }
  const count=filtered().length,selectedRanks=selectedValues("rank"),selectedTopics=selectedValues("topic");
  updateFilterSummary("rank","rankSummary","All belt ranks","ranks");
  updateFilterSummary("topic","topicSummary","All topics","topics");
  const topicLabel=selectedTopics.length?selectedTopics.join(", "):"All topics";
  const rankLabel=selectedRanks.length?selectedRanks.join(", "):"All belt ranks";
- const scope=[topicLabel,rankLabel].join(" · ");
+ const scope=isSyllabus?[selectedCourse,topicLabel,rankLabel].join(" · "):selectedCourse;
  $("scope").innerHTML=`<strong>${escapeHtml(scope)}</strong> · ${count} question${count===1?"":"s"} available`;
+ $("setupHint").textContent=isSyllabus
+  ?"Choose one or more belt ranks and topics, or leave them unfiltered. Answers are revealed after you submit. Progress is saved in this browser and synced when you sign in."
+  :"Choose how many governance questions to practise. Answers are revealed after you submit. Progress is saved in this browser and synced when you sign in.";
  $("start").disabled=count===0;
 }
 
+document.querySelectorAll('input[name="course"]').forEach(option=>option.addEventListener("change",updateSetup));
+const courseTrack=$("courseOptions");
+const coursePrevious=$("coursePrevious");
+const courseNext=$("courseNext");
+function updateCourseCarouselControls() {
+ coursePrevious.disabled=courseTrack.scrollLeft<=1;
+ courseNext.disabled=courseTrack.scrollLeft+courseTrack.clientWidth>=courseTrack.scrollWidth-1;
+}
+coursePrevious.addEventListener("click",()=>{
+ courseTrack.scrollBy({
+  left:-courseTrack.clientWidth*.8,
+  behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"
+ });
+});
+courseNext.addEventListener("click",()=>{
+ courseTrack.scrollBy({
+  left:courseTrack.clientWidth*.8,
+  behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"
+ });
+});
+courseTrack.addEventListener("scroll",updateCourseCarouselControls,{passive:true});
+window.addEventListener("resize",updateCourseCarouselControls);
+updateCourseCarouselControls();
+courseTrack.querySelectorAll(".course-option").forEach(option=>{
+ let pointerFrame=0;
+ option.addEventListener("pointermove",event=>{
+  if(event.pointerType!=="mouse"||window.matchMedia("(prefers-reduced-motion: reduce)").matches||pointerFrame)return;
+  pointerFrame=requestAnimationFrame(()=>{
+   pointerFrame=0;
+   const bounds=option.getBoundingClientRect();
+   const x=(event.clientX-bounds.left)/bounds.width-.5;
+   const y=(event.clientY-bounds.top)/bounds.height-.5;
+   option.style.setProperty("--tilt-x",`${(x*2).toFixed(2)}deg`);
+   option.style.setProperty("--tilt-y",`${(-y*1.5).toFixed(2)}deg`);
+   option.style.setProperty("--art-x",`${(x*10).toFixed(1)}px`);
+   option.style.setProperty("--art-y",`${(y*8).toFixed(1)}px`);
+  });
+ });
+ option.addEventListener("pointerleave",()=>{
+  if(pointerFrame)cancelAnimationFrame(pointerFrame);
+  pointerFrame=0;
+  option.style.removeProperty("--tilt-x");
+  option.style.removeProperty("--tilt-y");
+  option.style.removeProperty("--art-x");
+  option.style.removeProperty("--art-y");
+ });
+ option.addEventListener("click",()=>{
+  const bounds=option.getBoundingClientRect();
+  const trackBounds=courseTrack.getBoundingClientRect();
+  courseTrack.scrollTo({
+   left:courseTrack.scrollLeft+bounds.left-trackBounds.left-(courseTrack.clientWidth-bounds.width)/2,
+   behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"
+  });
+ });
+});
 $("clearRanks").addEventListener("click",()=>{
  document.querySelectorAll('input[name="rank"]:checked').forEach(option=>{option.checked=false});
  updateSetup();
@@ -82,6 +154,7 @@ $("clearTopics").addEventListener("click",()=>{
 });
 
 function start(list=null) {
+ submittingQuiz=false;
  let pool=list||filtered();
  pool=shuffle([...pool]);
  const count=list?pool.length:$("count").value==="all"?pool.length:Number($("count").value);
@@ -91,14 +164,18 @@ function start(list=null) {
  $("setup").style.display="none";
  $("results").style.display="none";
  $("quiz").style.display="block";
+ document.body.classList.add("quiz-active");
  render();
  window.scrollTo(0,0);
 }
 
 function render() {
  const question=quiz[index];
+ $("questionText").classList.remove("is-entering");
+ void $("questionText").offsetWidth;
+ $("questionText").classList.add("is-entering");
  $("qcounter").textContent=`Question ${index+1} of ${quiz.length}`;
- $("qmeta").textContent=`${question.cat} · ${question.rank}`;
+ $("qmeta").textContent=`${question.cat} · ${question.rank||NO_RANK_LABEL}`;
  $("bar").style.width=(index+1)/quiz.length*100+"%";
  $("questionText").textContent=question.q;
  $("questionMedia").innerHTML=question.image?`<img class="pattern-diagram" src="${escapeHtml(question.image)}" alt="Pattern diagram for visual identification question">`:"";
@@ -107,20 +184,35 @@ function render() {
   const button=document.createElement("button");
   button.className="option"+(answers[index]===option?" selected":"");
   button.innerHTML=`<span class="letter">${String.fromCharCode(65+i)}</span>${escapeHtml(option)}`;
-  button.onclick=()=>{answers[index]=option;render()};
+  button.onclick=()=>{
+   answers[index]=option;
+   $("options").querySelectorAll(".option").forEach((answerButton,answerIndex)=>{
+    answerButton.classList.toggle("selected",answerIndex===i);
+   });
+   updateAnsweredProgress();
+  };
   $("options").appendChild(button);
  });
  $("prev").disabled=index===0;
  $("next").style.display=index===quiz.length-1?"none":"inline-block";
  $("submit").style.display=index===quiz.length-1?"inline-block":"none";
- $("answeredCount").textContent=`${answers.filter(answer=>answer!==null).length} of ${quiz.length} answered`;
+ updateAnsweredProgress();
+}
+
+function updateAnsweredProgress() {
+ const answered=answers.filter(answer=>answer!==null).length;
+ const percent=Math.round(answered/quiz.length*100);
+ $("bar").style.width=percent+"%";
+ $("quizProgress").setAttribute("aria-valuenow",String(percent));
+ $("answeredCount").textContent=`${answered} of ${quiz.length} answered · ${percent}% complete`;
 }
 
 function renderBreakdown() {
  const group=(key,order)=>{
   const groups={};
   quiz.forEach((question,i)=>{
-   const summary=groups[question[key]]||(groups[question[key]]={a:0,c:0,seen:0,total:0});
+   const value=key==="rank"?(question.rank||NO_RANK_LABEL):question[key];
+   const summary=groups[value]||(groups[value]={a:0,c:0,seen:0,total:0});
    summary.a++;
    summary.seen++;
    summary.total++;
@@ -134,16 +226,77 @@ function renderBreakdown() {
    return `<div class="prow">${header}</div>`;
   }).join("");
  };
- $("resBreak").innerHTML=`<div class="muted">By rank</div>${group("rank",ranks)}<div class="muted" style="margin-top:10px">By topic</div>${group("cat")}`;
+ $("resRank").innerHTML=group("rank",rankOptions);
+ $("resTopic").innerHTML=group("cat");
+ showResultView("rank");
+}
+
+function showResultView(view) {
+ const views=["rank","topic","review"];
+ for(const name of views) {
+  const active=name===view;
+  $(`${name}Results`).hidden=!active;
+  $(`show${name[0].toUpperCase()+name.slice(1)}`).classList.toggle("active",active);
+  $(`show${name[0].toUpperCase()+name.slice(1)}`).setAttribute("aria-pressed",String(active));
+ }
+}
+
+function renderReview() {
+ const reviews=quiz.map((question,index)=>({question,index,isCorrect:answers[index]===question.a}))
+  .filter(review=>!reviewIncorrectOnly||!review.isCorrect);
+ $("reviewCount").textContent=reviewIncorrectOnly
+  ?`Showing ${reviews.length} incorrect or unanswered question${reviews.length===1?"":"s"}`
+  :`Showing all ${reviews.length} questions`;
+ $("reviewList").innerHTML=reviews.map(({question,index,isCorrect})=>{
+  const selectedAnswer=answers[index];
+  const options=question.options.map((option,optionIndex)=>{
+   const isCorrectOption=option===question.a;
+   const isSelected=option===selectedAnswer;
+   const resultClass=isCorrectOption?"review-option-correct":isSelected?"review-option-incorrect":"";
+   const status=isSelected?(isCorrect?"Your answer · Correct":"Your answer"):isCorrectOption?"Correct answer":"";
+   return `<button type="button" class="option review-option ${resultClass}" disabled><span class="letter">${String.fromCharCode(65+optionIndex)}</span>${escapeHtml(option)}${status?`<span class="review-option-status">${escapeHtml(status)}</span>`:""}</button>`;
+  }).join("");
+  return `<article class="review">
+   <span class="tag">${escapeHtml(question.cat)}</span><span class="tag">${escapeHtml(question.rank||NO_RANK_LABEL)}</span>
+   <p><strong>${index+1}. ${escapeHtml(question.q)}</strong></p>
+   ${question.image?`<img class="pattern-diagram" src="${escapeHtml(question.image)}" alt="Pattern diagram shown in question">`:""}
+   <div class="review-options">${options}</div>
+   ${selectedAnswer===null?'<p class="muted">Not answered</p>':""}
+   ${question.why?`<p class="muted">${escapeHtml(question.why)}</p>`:""}
+  </article>`;
+ }).join("");
 }
 
 async function submitQuiz() {
+ if(submittingQuiz)return;
+ submittingQuiz=true;
+ $("submit").disabled=true;
  const correct=quiz.reduce((total,question,i)=>total+(answers[i]===question.a?1:0),0);
  const percent=Math.round(correct/quiz.length*100);
  const progress=loadProgress();
  progress.quizzes++;
  progress.best=Math.max(progress.best,percent);
  progress.last=percent;
+ const historyId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
+ const historyEntry={
+  id:historyId,
+  completedAt:new Date().toISOString(),
+  course:quiz[0]?.course||selectedCourse||"Quiz",
+  score:percent,
+  correct,
+  total:quiz.length,
+  questions:quiz.map((question,i)=>({
+   q:question.q,
+   a:question.a,
+   selected:answers[i],
+   options:question.options,
+   cat:question.cat,
+   rank:question.rank,
+   why:question.why||"",
+   image:question.image||null
+  }))
+ };
+ progress.history=[historyEntry,...progress.history].slice(0,window.QUIZ_HISTORY_LIMIT);
  localStorage.setItem("tkdProgress",JSON.stringify(progress));
  const questions=loadQ();
  quiz.forEach((question,i)=>{
@@ -153,33 +306,52 @@ async function submitQuiz() {
   if(answers[i]===question.a)result.c++;
  });
  localStorage.setItem("tkdQ",JSON.stringify(questions));
- await window.saveProgressToCloud();
  renderBreakdown();
  $("quiz").style.display="none";
  $("results").style.display="block";
+ document.body.classList.remove("quiz-active");
  $("score").textContent=percent+"%";
  $("rightCount").textContent=`${correct}/${quiz.length}`;
  $("wrongCount").textContent=quiz.length-correct;
  $("resultMessage").textContent=percent>=90?"Excellent work — keep the recall sharp.":percent>=70?"Good progress. Review the missed answers and try again.":"Good practice. Focus on the missed terminology and theory, then retest.";
- $("reviewList").innerHTML="";
- quiz.forEach((question,i)=>{
-  const isCorrect=answers[i]===question.a;
-  const review=document.createElement("div");
-  review.className="review";
-  review.innerHTML=`<span class="tag">${escapeHtml(question.cat)}</span><span class="tag">${escapeHtml(question.rank)}</span><p><strong>${i+1}. ${escapeHtml(question.q)}</strong></p>${question.image?`<img class="pattern-diagram" src="${escapeHtml(question.image)}" alt="Pattern diagram shown in question">`:""}<p class="${isCorrect?"correct":"incorrect"}">${isCorrect?"Correct":"Your answer: "+escapeHtml(answers[i]??"Not answered")}</p><p><strong>Correct answer:</strong> ${escapeHtml(question.a)}</p><p class="muted">${escapeHtml(question.why||"")}</p>`;
-  $("reviewList").appendChild(review);
- });
+ renderReview();
  $("retryWrong").disabled=correct===quiz.length;
  window.scrollTo(0,0);
+ try {
+  await window.saveProgressToCloud();
+ } finally {
+  submittingQuiz=false;
+  $("submit").disabled=false;
+ }
 }
 
 $("prev").onclick=()=>{index--;render()};
 $("next").onclick=()=>{index++;render()};
 $("submit").onclick=submitQuiz;
+$("showRank").onclick=()=>showResultView("rank");
+$("showTopic").onclick=()=>showResultView("topic");
+$("showReview").onclick=()=>showResultView("review");
+$("reviewAll").onclick=()=>{
+ reviewIncorrectOnly=false;
+ $("reviewAll").classList.add("active");
+ $("reviewAll").setAttribute("aria-pressed","true");
+ $("reviewIncorrect").classList.remove("active");
+ $("reviewIncorrect").setAttribute("aria-pressed","false");
+ renderReview();
+};
+$("reviewIncorrect").onclick=()=>{
+ reviewIncorrectOnly=true;
+ $("reviewIncorrect").classList.add("active");
+ $("reviewIncorrect").setAttribute("aria-pressed","true");
+ $("reviewAll").classList.remove("active");
+ $("reviewAll").setAttribute("aria-pressed","false");
+ renderReview();
+};
 $("start").onclick=()=>start();
 $("newQuiz").onclick=()=>{
  $("results").style.display="none";
  $("setup").style.display="block";
+ document.body.classList.remove("quiz-active");
  window.scrollTo(0,0);
 };
 $("retryWrong").onclick=()=>{

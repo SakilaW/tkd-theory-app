@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quiz · Taekwon-Do Theory</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=20261110">
 </head>
 <body>
 <header><div class="wrap">
-<h1>Taekwon-Do Theory (10th Gup - 1st Gup)</h1>
+<a class="brand" href="index.html">TKD THEORY</a>
 <nav class="site-nav" aria-label="Main navigation">
 <a href="index.html" aria-current="page">Quiz</a>
 <a href="progress.html">Progress</a>
@@ -16,39 +16,24 @@
 </nav>
 </div></header>
 <main>
-<details class="sync-panel card">
-<summary><span>Save progress across devices</span><span class="sync-badge" id="syncBadge">On this device</span></summary>
-<div class="sync-content">
-<p id="syncMessage" class="muted" aria-live="polite">Progress is saved on this device until you connect an account.</p>
-<div id="syncNotConfigured">
-<p class="muted">Connect a free Supabase project to create an account and sync your quiz progress.</p>
-<form id="syncConfigForm" class="sync-fields">
-<div class="field"><label for="supabaseUrl">Supabase project URL</label><input id="supabaseUrl" type="url" placeholder="https://your-project.supabase.co" autocomplete="url" required></div>
-<div class="field"><label for="supabaseKey">Publishable key (or legacy anon key)</label><input id="supabaseKey" type="password" placeholder="sb_publishable_..." autocomplete="off" required></div>
-<button type="submit">Connect project</button>
-</form>
-<p class="footer">Do not enter a service-role key. Follow the setup steps in <a href="README.md#sync-progress-with-supabase">the README</a>.</p>
+<section class="card home-hero" id="setup">
+<div class="hero-copy">
+<span class="eyebrow"><span class="eyebrow-dot"></span> YOUR THEORY TRAINING SPACE</span>
+<h1>Train your ITF Taekwon-Do <span>knowledge.</span></h1>
+<p>Preparation for the theory component of the black belt grading.</p>
 </div>
-<div id="syncConfigured" hidden>
-<p class="muted">Connected to <strong id="configuredProject"></strong>.</p>
-<div id="signedOut">
-<div class="sync-fields">
-<div class="field"><label for="accountEmailInput">Email</label><input id="accountEmailInput" type="email" placeholder="you@example.com" autocomplete="email"></div>
-<div class="field"><label for="credentialInput">Password</label><input id="credentialInput" type="password" autocomplete="current-password"></div>
+<fieldset class="course-picker">
+<legend class="visually-hidden">Choose what you're studying</legend>
+<div class="carousel-heading"><span class="carousel-title">Choose a study path</span><div class="carousel-controls" aria-label="Study path carousel controls"><button type="button" class="carousel-arrow" id="coursePrevious" aria-label="Previous study path" disabled>←</button><button type="button" class="carousel-arrow" id="courseNext" aria-label="Next study path">→</button></div></div>
+<div class="course-options" id="courseOptions" role="group" aria-label="Available study courses" tabindex="0">
+<label class="course-option course-technique"><input type="radio" name="course" value="Coloured Belt Techniques Syllabus"><span class="course-art"><span class="course-art-title">Syllabus</span></span><span class="course-copy"><small class="course-kicker">TECHNIQUE &amp; THEORY</small><strong>Coloured Belt Techniques</strong><small>Explore your syllabus by belt rank and topic.</small></span><span class="course-mark" aria-hidden="true"></span></label>
+<label class="course-option course-governance"><input type="radio" name="course" value="ITKD Governance"><span class="course-art"><span class="course-art-title">ITKD</span></span><span class="course-copy"><small class="course-kicker">PEOPLE &amp; ORGANISATION</small><strong>ITKD Governance</strong><small>Meet the people and structure behind ITKD.</small></span><span class="course-mark" aria-hidden="true"></span></label>
 </div>
-<div class="actions"><button type="button" id="signIn">Sign in</button><button type="button" class="secondary" id="signUp">Create account</button></div>
-</div>
-<div id="signedIn" hidden>
-<p>Signed in as <strong id="accountEmail"></strong></p>
-<button type="button" class="secondary" id="signOut">Sign out</button>
-</div>
-<button type="button" class="text-button" id="changeSupabase">Change Supabase project</button>
-</div>
-</div>
-</details>
-<section class="card" id="setup">
-<h2>Set up your quiz</h2>
+<p class="carousel-hint">Swipe or scroll to explore <span aria-hidden="true">·</span> Select a path to customise your quiz</p>
+</fieldset>
+<div id="quizOptions" hidden>
 <div class="controls">
+<div id="syllabusFilters" class="controls">
 <div class="field">
 <span class="field-label">Belt ranks</span>
 <details class="multi-select">
@@ -65,18 +50,40 @@
 <button type="button" class="text-button" id="clearTopics">Clear selection (all topics)</button>
 </details>
 </div>
+</div>
 <div class="field"><label for="count">Question count</label><select id="count"><option value="20">20 questions</option><option value="40">40 questions</option><option value="60">60 questions</option><option value="all">All available questions</option></select></div>
 </div>
 <p id="scope"></p>
-<p class="muted">Choose one or more belt ranks and topics. Leave a filter empty to include all. Answers are revealed after you submit. Progress is saved in this browser and synced when you sign in.</p>
+<p id="setupHint" class="muted"></p>
 <div class="actions"><button id="start">Start quiz</button></div>
+</div>
 </section>
+<details class="sync-panel card">
+<summary><span>Sync progress across devices</span><span class="sync-badge" id="syncBadge">On this device</span></summary>
+<div class="sync-content">
+<p id="syncMessage" class="muted" aria-live="polite">Progress is saved on this device. Sign in to sync it between devices.</p>
+<form id="accountForm">
+<div id="signedOut">
+<div class="sync-fields">
+<div class="field"><label for="accountEmailInput">Email address</label><input id="accountEmailInput" type="email" placeholder="you@example.com" autocomplete="email" required></div>
+<div class="field"><label for="credentialInput">Password</label><input id="credentialInput" type="password" placeholder="Password" autocomplete="current-password" required></div>
+</div>
+<div class="actions"><button type="button" class="secondary" id="signIn">Sign in</button><button type="button" id="signUp">Create account</button></div>
+<p class="footer">Your progress stays on this device unless you sign in. Email confirmation may be required to finish creating an account.</p>
+</div>
+<div id="signedIn" hidden>
+<p>Signed in as <strong id="accountEmail"></strong></p>
+<button type="button" class="secondary" id="signOut">Sign out</button>
+</div>
+</form>
+</div>
+</details>
 <section class="card" id="quiz">
 <div class="qtop"><span id="qcounter">Question 1</span><span id="qmeta"></span></div>
-<div class="progress"><div id="bar"></div></div>
+<div class="progress" id="quizProgress" role="progressbar" aria-label="Quiz questions answered" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="bar"></div></div>
 <div class="question" id="questionText"></div><div id="questionMedia"></div><div class="options" id="options"></div>
 <div class="actions"><button class="secondary" id="prev">Previous</button><button id="next">Next question</button><button id="submit" style="display:none">Submit quiz</button></div>
-<p class="muted" id="answeredCount"></p>
+<p class="muted" id="answeredCount" aria-live="polite"></p>
 </section>
 <section class="card" id="results">
 <h2>Quiz results</h2>
@@ -87,14 +94,28 @@
 </div>
 <p id="resultMessage"></p>
 <div class="actions"><button id="retryWrong">Practise missed questions</button><button class="secondary" id="newQuiz">New quiz</button></div>
-<h3>Performance this quiz</h3><div id="resBreak"></div>
-<details open><summary>Review answers</summary><div id="reviewList"></div></details>
+<h3>Explore your results</h3>
+<div class="result-switcher" role="group" aria-label="Quiz result views">
+<button type="button" class="result-switch active" id="showRank" aria-controls="rankResults" aria-pressed="true">By rank</button>
+<button type="button" class="result-switch" id="showTopic" aria-controls="topicResults" aria-pressed="false">By topic</button>
+<button type="button" class="result-switch" id="showReview" aria-controls="reviewResults" aria-pressed="false">Review answers</button>
+</div>
+<section class="result-panel" id="rankResults" aria-label="Performance by rank"><div id="resRank"></div></section>
+<section class="result-panel" id="topicResults" aria-label="Performance by topic" hidden><div id="resTopic"></div></section>
+<section class="result-panel" id="reviewResults" aria-label="Review answers" hidden>
+<div class="review-filters" role="group" aria-label="Filter reviewed questions">
+<button type="button" class="review-filter active" id="reviewAll" aria-pressed="true">All questions</button>
+<button type="button" class="review-filter" id="reviewIncorrect" aria-pressed="false">Incorrect only</button>
+</div>
+<p class="muted" id="reviewCount" aria-live="polite"></p>
+<div id="reviewList"></div>
+</section>
 </section>
 </main>
-<script src="data.js"></script>
-<script src="shared.js"></script>
+<script src="data.js?v=20261101"></script>
+<script src="shared.js?v=20261101"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
-<script src="quiz.js"></script>
+<script src="auth.js?v=20261110"></script>
+<script src="quiz.js?v=20261108"></script>
 </body>
 </html>
